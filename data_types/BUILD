@@ -3,3 +3,9 @@ py_library(
     srcs = ["thermo_point.py"],
     visibility = ["//ccpd:__subpackages__"],
 )
+
+py_library(
+    name = "inputs",
+    srcs = ["inputs.py"],
+    visibility = ["//ccpd:__subpackages__"],
+)
