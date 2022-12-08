@@ -1,0 +1,9 @@
+{
+  "name": "aluminum",
+  "properties": {
+    "specific_heat": 1.124,
+    "specific ratio": 0.234,
+    "specific_gas_constant": 266.4,
+    "kinematic_viscosity": 0.0033
+  }
+}
