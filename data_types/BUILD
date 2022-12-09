@@ -9,3 +9,15 @@ py_library(
     srcs = ["inputs.py"],
     visibility = ["//ccpd:__subpackages__"],
 )
+
+py_library(
+    name = "working_fluid",
+    srcs = ["working_fluid.py"],
+    visibility = ["//ccpd:__subpackages__"],
+)
+
+py_library(
+    name = "material",
+    srcs = ["material.py"],
+    visibility = ["//ccpd:__subpackages__"],
+)
