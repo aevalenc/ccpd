@@ -6,6 +6,9 @@ Update: 24 July, 2020
 """
 
 from data_types.thermo_point import CentrifugalCompressor
+from data_types.working_fluid import WorkingFluid
+import json
+import sys
 
 
 def centrifugal_calcs(
@@ -56,13 +59,25 @@ def centrifugal_calcs(
     # eps  = inputs(6);   % [m]      Tip clearance
     # Dhub = inputs(7);   % [m]      Hub diameter
 
-    cp   = fluid(1);    % [J/kgK]  Specific heat at constant pr_essure for T = 303K
+    try:
+        fluid_database_file = open("ccpd/fluids/fluids.json", "r")
+    except IOError as io_error:
+        print(f"{io_error} Fluid database import failed!")
+        sys.exit()
+
+    fluid_database = json.load(fluid_database_file)
+    working_fluid = WorkingFluid(fluid_database[fluid])
+
+    # cp  # [J/kgK]  Specific heat at constant pressure for T = 303K
     # Rh   = fluid(2);    % [J/kgK]  Specific gas constant for H2
     # y    = fluid(3);    % []       Specific ratio
     # mu   = fluid(4);    % [Ns/m^2] Kinematic viscosity @ inlet total temperature
 
-    # k    = (y - 1) / y; % []       Define isentropic exponent
-    # ki   = 1 / k;       % []       Inverse isentropic exponent
+    isentropic_exponent = (
+        working_fluid.specific_ratio - 1.0
+    ) / working_fluid.specific_ratio
+
+    # ki   = 1 / k;       % []       inverse isentropic exponent
 
     # %% [B]:Initial Calculations
     # his   = cp * TT1 * (B ^ k - 1);         % [J/kg]   Isentropic work
