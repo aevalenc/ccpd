@@ -8,7 +8,9 @@ Update: 24 July, 2020
 from data_types.thermo_point import CentrifugalCompressor
 
 
-def centrifugal_calcs(Ds, Oms, eta, fluid, mat):
+def centrifugal_calcs(
+    specific_diameter, specific_speed, end_to_end_efficiency, fluid, material, inputs
+):
     """
     This function takes initial design parameters and calculates the first
     centrifugal design iteration. Velocity triangles and thermodynamic
@@ -53,10 +55,12 @@ def centrifugal_calcs(Ds, Oms, eta, fluid, mat):
     # rgh  = inputs(5);   % [m]      Roughness for structural steel
     # eps  = inputs(6);   % [m]      Tip clearance
     # Dhub = inputs(7);   % [m]      Hub diameter
-    # cp   = fluid(1);    % [J/kgK]  Specific heat at constant pr_essure for T = 303K
+
+    cp   = fluid(1);    % [J/kgK]  Specific heat at constant pr_essure for T = 303K
     # Rh   = fluid(2);    % [J/kgK]  Specific gas constant for H2
     # y    = fluid(3);    % []       Specific ratio
     # mu   = fluid(4);    % [Ns/m^2] Kinematic viscosity @ inlet total temperature
+
     # k    = (y - 1) / y; % []       Define isentropic exponent
     # ki   = 1 / k;       % []       Inverse isentropic exponent
 
