@@ -8,6 +8,7 @@
 from data_types.inputs import DesignParameters, Inputs
 from utilities.centrifugal_calcs import centrifugal_calcs
 import json
+import sys
 
 
 def main(design_stage, varargin):
@@ -42,13 +43,19 @@ def main(design_stage, varargin):
 
     if design_stage == "Preliminary":
         # [A]:Set Calculation Parameters
-        design_parameters = DesignParameters(json.load("ccpd/design_parameters/json"))
-        inputs = Inputs(json.load("ccpd/inputs.json"))
-        Ds = varargin[1]
-        Oms = varargin[2]
-        eta_tt = varargin[3]
-        fluid = varargin[4]
-        mat = varargin[5]
+        try:
+            design_parameter_file = open("ccpd/design_parameters.json", "r")
+        except IOError as io_error:
+            print(f"Error\[{io_error}\] Design parameters import failed!")
+            sys.exit()
+        design_parameters = DesignParameters(json.load(design_parameter_file))
+
+        try:
+            input_file = open("ccpd/inputs.json", "r")
+        except IOError as io_error:
+            print(f"Error\[{io_error}\] input parameters import failed!")
+            sys.exit()
+        inputs = Inputs(json.load(input_file))
 
         # [B] Set Loop Parameters
         if len(varargin) > 6:
@@ -86,3 +93,7 @@ def main(design_stage, varargin):
             # eta_tt = design.diff.eta_tt
 
     return design
+
+
+if __name__ == "__main__":
+    main("Preliminary", [])
