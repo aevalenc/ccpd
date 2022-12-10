@@ -7,13 +7,20 @@ Update: 24 July, 2020
 
 from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
 from ccpd.data_types.working_fluid import WorkingFluid
+from ccpd.data_types.inputs import Inputs
 import json
 import sys
+import numpy as np
 
 
 def centrifugal_calcs(
-    specific_diameter, specific_speed, end_to_end_efficiency, fluid, material, inputs
-):
+    specific_diameter,
+    specific_speed,
+    end_to_end_efficiency,
+    fluid,
+    material,
+    inputs: Inputs,
+) -> CentrifugalCompressor:
     """
     This function takes initial design parameters and calculates the first
     centrifugal design iteration. Velocity triangles and thermodynamic
@@ -42,7 +49,7 @@ def centrifugal_calcs(
             diff: Structure containing the information on the wedge
               diffuser both thermodynamic and geometrical quantites
     """
-
+    result = CentrifugalCompressor()
     # global mdot PT1 TT1 cp Rh B y mu rgh eps k ki
 
     # %% [A]:Import Data
@@ -77,25 +84,44 @@ def centrifugal_calcs(
         working_fluid.specific_ratio - 1.0
     ) / working_fluid.specific_ratio
 
-    # ki   = 1 / k;       % []       inverse isentropic exponent
+    inverse_isentropic_exponent = 1.0 / isentropic_exponent
 
-    # %% [B]:Initial Calculations
-    # his   = cp * TT1 * (B ^ k - 1);         % [J/kg]   Isentropic work
-    # rho01 = PT1 / (Rh * TT1);               % [kg/m^3] Inlet total density
-    # Q1    = mdot / rho01;                   % [m^3/s]  Total volume flow rate
-    # D2    = Ds .* sqrt(Q1) ./ his^(1/4);    % [m]      Outlet diameter
-    # w     = Oms .* his^(3/4) ./ sqrt(Q1);   % [rad/s]  Rotational Speed
+    # [B]:Initial Calculations
+    isentropic_work = (
+        working_fluid.specific_heat
+        * inputs.inlet_total_temperature
+        * (inputs.compression_ratio ^ isentropic_exponent - 1.0)
+    )
+
+    inlet_total_density = inputs.inlet_total_pressure / (
+        working_fluid.specific_gasconstant * inputs.inlet_total_temperature
+    )
+    total_volume_flow_rate = inputs.mass_flow_rate / inlet_total_density
+
+    outlet_diameter = (
+        specific_diameter
+        * np.sqrt(total_volume_flow_rate)
+        / np.power(isentropic_work, 0.25)
+    )
+
+    rotational_speed = (
+        specific_speed
+        * np.power(isentropic_work, 0.75)
+        / np.sqrt(total_volume_flow_rate)
+    )
     # wRPM  = w * 60/(2*pi);                  % [RPM]
 
-    # %% [C]:Calculate Velocities and Eulerian Work
-    # U2     = w * D2/2;               % [m/s]  Translational velocity
-    # l_eul  = his / eta;              % [J\kg] Non-isentropic work
-    # V2.tan = l_eul / U2;             % [m/s]  Rotor exit tangential velocity
+    # [C]:Calculate Velocities and Eulerian Work
+    translational_velocity = rotational_speed * outlet_diameter / 2.0
+    eulerian_work = isentropic_work / end_to_end_efficiency
+    outlet_tangential_velocity = eulerian_work / translational_velocity
 
-    # %% [D]:Calculate Flow Ratios
-    # Psi = his / U2^2;           % [] Stage loading
-    # Phi = mdot/(rho01*U2*D2^2); % [] Flow coefficient
-    # tau = V2.tan / U2;          % [] Blade orientation ratio
+    # [D]:Calculate Flow Ratios
+    stage_loading = isentropic_work / np.square(translational_velocity)
+    flow_coefficient = inputs.mass_flow_rate / (
+        inlet_total_density * (translational_velocity * (outlet_diameter / 2.0))
+    )
+    blade_orientation_ratio = outlet_tangential_velocity / translational_velocity
 
     # %% [E]:Hub Diameter
     # % If a hub diameter is specified then it is automatically placed in
@@ -200,5 +226,4 @@ def centrifugal_calcs(
     # result.comp.etap   = etap;      % [] Polytropic efficiency
     # result.comp.C      = C;         % [] Operating line constant
     # oo = 0
-    result = CentrifugalCompressor()
     return result
