@@ -23,6 +23,12 @@ py_library(
 )
 
 py_library(
+    name = "centrifugal_compressor",
+    srcs = ["centrifugal_compressor.py"],
+    visibility = ["//ccpd:__subpackages__"],
+)
+
+py_library(
     name = "velocity_triangle",
     srcs = ["velocity_triangle.py"],
     visibility = ["//ccpd:__subpackages__"],

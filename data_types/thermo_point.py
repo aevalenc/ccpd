@@ -11,11 +11,3 @@ class ThermoPoint:
     P = 3
     T = 2
     rho = 1
-
-
-class CentrifugalCompressor:
-    """
-    Thermo point class data type
-    """
-
-    diff = {"eta_tt": 1.0}
