@@ -21,3 +21,9 @@ py_library(
     srcs = ["material.py"],
     visibility = ["//ccpd:__subpackages__"],
 )
+
+py_library(
+    name = "velocity_triangle",
+    srcs = ["velocity_triangle.py"],
+    visibility = ["//ccpd:__subpackages__"],
+)
