@@ -1,12 +1,7 @@
 """
-  Input parameters
-
-  The following are inputs for the prelimiary design calculations:
-              Ds    : Specific diameter
-             Oms   : Specific Speed
-             eta_tt: Baseline end to end efficiency
-             fluid : Working fluid for the machine
-             mat   : Compressor material
+    Author: Alejandro Valencia
+    Update: 11 December, 2022
+    Blade related classes
 """
 
 import numpy as np
