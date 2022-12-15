@@ -79,7 +79,7 @@ def centrifugal_calcs(
     )
 
     compressor.inlet.thermodynamic_point.density.total = inputs.inlet_total_pressure / (
-        working_fluid.specific_gasconstant * inputs.inlet_total_temperature
+        working_fluid.specific_gas_constant * inputs.inlet_total_temperature
     )
     total_volume_flow_rate = (
         inputs.mass_flow_rate / compressor.inlet.thermodynamic_point.density.total
@@ -107,16 +107,18 @@ def centrifugal_calcs(
         eulerian_work / compressor.outlet.blade.mid.tangential
     )
 
-    # [D]:Calculate Flow Ratios
-    stage_loading = isentropic_work / np.square(compressor.outlet.blade.mid.tangential)
-    flow_coefficient = inputs.mass_flow_rate / (
+    # [D]:Calculate Flow Perfomance Indicators
+    compressor.stage_loading = isentropic_work / np.square(
+        compressor.outlet.blade.mid.tangential
+    )
+    compressor.flow_coefficient = inputs.mass_flow_rate / (
         compressor.inlet.thermodynamic_point.density.total
         * (
             compressor.outlet.blade.mid.tangential
             * (compressor.geometry.outer_diameter / 2.0)
         )
     )
-    blade_orientation_ratio = (
+    compressor.blade_orientation_ratio = (
         compressor.outlet.blade.mid.axial / compressor.outlet.blade.mid.tangential
     )
 
@@ -223,4 +225,4 @@ def centrifugal_calcs(
     # result.comp.etap   = etap;      % [] Polytropic efficiency
     # result.comp.C      = C;         % [] Operating line constant
     # oo = 0
-    return result
+    return compressor
