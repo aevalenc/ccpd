@@ -49,22 +49,7 @@ def centrifugal_calcs(
             diff: Structure containing the information on the wedge
               diffuser both thermodynamic and geometrical quantites
     """
-    result = CentrifugalCompressor()
-    # global mdot PT1 TT1 cp Rh B y mu rgh eps k ki
-
-    # %% [A]:Import Data
-    # % The inputs are taken from a txt file. The function read_file will
-    # % 	store the values in an array
-    # inputs = read_file('inputs.txt');
-    # fluid  = read_file(".\Fluids" + '\' + fluid);
-
-    # mdot = inputs(1);   % [kg/s]   Operating mass flow rate
-    # PT1  = inputs(2);   % [Pa]     Total pressure at the inlet
-    # TT1  = inputs(3);   % [K]      Total temperature at the inlet
-    # B    = inputs(4);   % []       Final compression ratio
-    # rgh  = inputs(5);   % [m]      Roughness for structural steel
-    # eps  = inputs(6);   % [m]      Tip clearance
-    # Dhub = inputs(7);   % [m]      Hub diameter
+    compressor = CentrifugalCompressor()
 
     try:
         fluid_database_file = open("ccpd/fluids/fluids.json", "r")
@@ -93,12 +78,14 @@ def centrifugal_calcs(
         * (inputs.compression_ratio ^ isentropic_exponent - 1.0)
     )
 
-    inlet_total_density = inputs.inlet_total_pressure / (
+    compressor.inlet.thermodynamic_point.density.total = inputs.inlet_total_pressure / (
         working_fluid.specific_gasconstant * inputs.inlet_total_temperature
     )
-    total_volume_flow_rate = inputs.mass_flow_rate / inlet_total_density
+    total_volume_flow_rate = (
+        inputs.mass_flow_rate / compressor.inlet.thermodynamic_point.density.total
+    )
 
-    outlet_diameter = (
+    compressor.geometry.outer_diameter = (
         specific_diameter
         * np.sqrt(total_volume_flow_rate)
         / np.power(isentropic_work, 0.25)
@@ -112,16 +99,26 @@ def centrifugal_calcs(
     # wRPM  = w * 60/(2*pi);                  % [RPM]
 
     # [C]:Calculate Velocities and Eulerian Work
-    translational_velocity = rotational_speed * outlet_diameter / 2.0
+    compressor.outlet.blade.mid.tangential = (
+        rotational_speed * compressor.geometry.outer_diameter / 2.0
+    )
     eulerian_work = isentropic_work / end_to_end_efficiency
-    outlet_tangential_velocity = eulerian_work / translational_velocity
+    compressor.outlet.blade.mid.axial = (
+        eulerian_work / compressor.outlet.blade.mid.tangential
+    )
 
     # [D]:Calculate Flow Ratios
-    stage_loading = isentropic_work / np.square(translational_velocity)
+    stage_loading = isentropic_work / np.square(compressor.outlet.blade.mid.tangential)
     flow_coefficient = inputs.mass_flow_rate / (
-        inlet_total_density * (translational_velocity * (outlet_diameter / 2.0))
+        compressor.inlet.thermodynamic_point.density.total
+        * (
+            compressor.outlet.blade.mid.tangential
+            * (compressor.geometry.outer_diameter / 2.0)
+        )
     )
-    blade_orientation_ratio = outlet_tangential_velocity / translational_velocity
+    blade_orientation_ratio = (
+        compressor.outlet.blade.mid.axial / compressor.outlet.blade.mid.tangential
+    )
 
     # %% [E]:Hub Diameter
     # % If a hub diameter is specified then it is automatically placed in
