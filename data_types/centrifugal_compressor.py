@@ -45,6 +45,9 @@ class CentrifugalCompressor:
         self.diffusion_ratio = 0.5
         self.de_haller_number = 0.5
         self.lieblien_diffusion_factor = 0.5
+        self.stage_loading = 0.5
+        self.flow_coefficient = 0.5
+        self.blade_orientation_ratio = 0.5
 
         self.inlet = CompressorStage()
         self.outlet = CompressorStage()
