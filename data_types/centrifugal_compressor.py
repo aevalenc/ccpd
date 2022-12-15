@@ -49,3 +49,5 @@ class CentrifugalCompressor:
         self.inlet = CompressorStage()
         self.outlet = CompressorStage()
         self.diffuser = CompressorStage()
+
+        self.geometry = CompressorGeometry()
