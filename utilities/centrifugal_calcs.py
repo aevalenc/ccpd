@@ -5,8 +5,8 @@ Initial Calculations
 Update: 24 July, 2020
 """
 
-from data_types.thermo_point import CentrifugalCompressor
-from data_types.working_fluid import WorkingFluid
+from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
+from ccpd.data_types.working_fluid import WorkingFluid
 import json
 import sys
 
