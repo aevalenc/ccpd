@@ -4,7 +4,7 @@ py_library(
     data = ["//ccpd/fluids:fluids.json"],
     visibility = ["//ccpd:__subpackages__"],
     deps = [
-        "//ccpd/data_types:thermo_point",
+        "//ccpd/data_types:centrifugal_compressor",
         "//ccpd/data_types:working_fluid",
     ],
 )

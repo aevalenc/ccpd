@@ -9,6 +9,7 @@ from data_types.inputs import DesignParameters, Inputs
 from utilities.centrifugal_calcs import centrifugal_calcs
 import json
 import sys
+from colorama import Fore
 
 
 def main(design_stage, varargin):
@@ -62,13 +63,13 @@ def main(design_stage, varargin):
             itrmx = varargin[6]
             tol = varargin[7]
         else:
-            itrmx = 100
+            itrmx = 2
             tol = 1e-5
 
         # [C]:Run Analysis
         # design = CentrifugalCompressor()
         for itr in range(1, itrmx):
-            print("Main Iteration: {}\n".format(itr))
+            print(f"Main Iteration: {itr}\n")
 
             # [D]:Run Centrifugal Preliminary Design Calculations
             design = centrifugal_calcs(
@@ -91,6 +92,7 @@ def main(design_stage, varargin):
 
             # # [F]:Reset Efficiency & Iterate
             # eta_tt = design.diff.eta_tt
+        print(f"{Fore.GREEN}ccpd exited successfully")
 
     return design
 
