@@ -9,5 +9,8 @@ py_binary(
         "design_parameters.json",
         "inputs.json",
     ],
-    deps = ["//ccpd/utilities:centrifugal_calcs"],
+    deps = [
+        "//ccpd/utilities:centrifugal_calcs",
+        "@python_deps_colorama//:pkg",
+    ],
 )
