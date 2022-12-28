@@ -1,3 +1,5 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
 py_library(
     name = "thermo_point",
     srcs = ["thermo_point.py"],
@@ -36,4 +38,5 @@ py_library(
     name = "velocity_triangle",
     srcs = ["velocity_triangle.py"],
     visibility = ["//ccpd:__subpackages__"],
+    deps = ["@python_deps_numpy//:pkg"],
 )
