@@ -92,7 +92,7 @@ def main(design_stage, varargin):
 
             # # [F]:Reset Efficiency & Iterate
             # eta_tt = design.diff.eta_tt
-        print(f"{Fore.GREEN}ccpd exited successfully")
+        print(f"{Fore.GREEN}[ccpd]: finished successfully")
 
     return design
 
