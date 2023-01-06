@@ -1,7 +1,7 @@
 {
   "specific_diameter": 3.85,
   "specific_rotational_speed": 0.6,
-  "eta_tt": 0.85,
+  "end_to_end_efficiency": 0.85,
   "fluid": "air",
   "material": "aluminum"
 }
