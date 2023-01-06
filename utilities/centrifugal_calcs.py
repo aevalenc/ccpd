@@ -75,7 +75,7 @@ def centrifugal_calcs(
     isentropic_work = (
         working_fluid.specific_heat
         * inputs.inlet_total_temperature
-        * (inputs.compression_ratio ^ isentropic_exponent - 1.0)
+        * ((inputs.compression_ratio**isentropic_exponent) - 1.0)
     )
 
     compressor.inlet.thermodynamic_point.density.total = inputs.inlet_total_pressure / (
@@ -86,15 +86,11 @@ def centrifugal_calcs(
     )
 
     compressor.geometry.outer_diameter = (
-        specific_diameter
-        * np.sqrt(total_volume_flow_rate)
-        / np.power(isentropic_work, 0.25)
+        specific_diameter * np.sqrt(total_volume_flow_rate) / (isentropic_work**0.25)
     )
 
     rotational_speed = (
-        specific_speed
-        * np.power(isentropic_work, 0.75)
-        / np.sqrt(total_volume_flow_rate)
+        specific_speed * (isentropic_work**0.75) / np.sqrt(total_volume_flow_rate)
     )
     # wRPM  = w * 60/(2*pi);                  % [RPM]
 
