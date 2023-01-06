@@ -60,11 +60,6 @@ def centrifugal_calcs(
     fluid_database = json.load(fluid_database_file)
     working_fluid = WorkingFluid(fluid_database[fluid])
 
-    # cp  # [J/kgK]  Specific heat at constant pressure for T = 303K
-    # Rh   = fluid(2);    % [J/kgK]  Specific gas constant for H2
-    # y    = fluid(3);    % []       Specific ratio
-    # mu   = fluid(4);    % [Ns/m^2] Kinematic viscosity @ inlet total temperature
-
     isentropic_exponent = (
         working_fluid.specific_ratio - 1.0
     ) / working_fluid.specific_ratio
