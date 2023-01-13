@@ -5,10 +5,12 @@
   Update: 24 July, 2020
 """
 
-from ccpd.data_types.velocity_triangle import VelocityTriangle
-from ccpd.data_types.thermo_point import ThermodynamicVariable
+from ccpd.data_types.centrifugal_compressor import CompressorStage
+from ccpd.data_types.velocity_triangle import VelocityTriangle, ThreeDimensionalBlade
+from ccpd.data_types.thermo_point import ThermodynamicVariable, ThermoPoint
 from ccpd.data_types.inputs import Inputs
 from ccpd.data_types.working_fluid import WorkingFluid
+from ccpd.utilities.tip_diameter import ComputeTipDiameter
 from numpy import pi, sqrt
 
 # This function takes initial design parameters and calculates the inlet
@@ -80,7 +82,16 @@ from numpy import pi, sqrt
 #
 
 
-def inlet_loop(static_density_guess, Dhub, w, D2, itrmx, tolerance, inputs: Inputs, fluid: ):
+def inlet_loop(
+    static_density_guess,
+    Dhub,
+    w,
+    D2,
+    itrmx,
+    tolerance,
+    inputs: Inputs,
+    fluid: WorkingFluid,
+) -> CompressorStage:
 
     # global mdot PT1 TT1 cp Rh y
     # Quantities
@@ -94,9 +105,11 @@ def inlet_loop(static_density_guess, Dhub, w, D2, itrmx, tolerance, inputs: Inpu
     for itr in range(0, itrmx + 1):
 
         # [A]:Minimize Inlet Tip Diameter
-        Dtip = tip_diameter(
-            inputs.mass_flow_rate, static_density_guess, Dhub, D2, w
-        )  # [m]
+        Dtip = ComputeTipDiameter()
+        print(f"Mock tip diameter {Dtip:.3}")
+        # (
+        # inputs.mass_flow_rate, static_density_guess, Dhub, D2, w
+        # )  # [m]
 
         # [B]:Calculate Flow Inlet Area & Absolute Velocity
         S1 = pi / 4 * (Dtip ^ 2 - Dhub ^ 2)  # [m^2]
@@ -106,16 +119,22 @@ def inlet_loop(static_density_guess, Dhub, w, D2, itrmx, tolerance, inputs: Inpu
         V.tangential = 0
 
         # [C]:Static Temperature
-        T.static = TT1 - V.mag ^ 2 / (2 * cp)  # [K]
+        T.static = inputs.inlet_total_temperature - V.magnitude ^ 2 / (
+            2 * fluid.specific_heat
+        )  # [K]
 
         # [D]:Mach number
-        M1 = V.magnitude / sqrt(y * Rh * T.static)  # []
+        M1 = V.magnitude / sqrt(
+            fluid.specific_ratio * fluid.specific_gas_constant * T.static
+        )  # []
 
         # [E]:Static Pressure
-        P.static = P.total / (1 + (y - 1) / 2 * M1 ^ 2) ^ (y / (y - 1))  # [Pa]
+        P.static = P.total / (1 + (fluid.specific_ratio - 1) / 2 * M1 ^ 2) ^ (
+            fluid.specific_ratio / (fluid.specific_ratio - 1)
+        )  # [Pa]
 
         # [F]:Recalculate Density
-        rho.static = P.static / (Rh * T.static)  # [kg/m^3]
+        rho.static = P.static / (fluid.specific_gas_constant * T.static)  # [kg/m^3]
 
         # [G]:Check for Convergence
         RES = abs(rho - static_density_guess) / static_density_guess
@@ -136,13 +155,19 @@ def inlet_loop(static_density_guess, Dhub, w, D2, itrmx, tolerance, inputs: Inpu
         # [H]:Reset Density
         static_density_guess = rho
 
-    rho.static = P.static / (Rh * T.static)
+    rho.static = P.static / (fluid.specific_gas_constant * T.static)
 
     # [I]:Output
-    result.Dtip = Dtip  # [m]   Tip diameter
-    result.T1 = T1  # [K]   Static Temperature
-    result.M1 = M1  # []    Absolute Mach number
-    result.P1 = P1  # [Pa]  Static Pressure
-    # result.V.mid = V1  # [m/s] Absolute velocity
-    result.S1 = S1  # [m^2] Inlet flow area
-    result.rho1 = rho1
+    # result.Dtip = Dtip  # [m]   Tip diameter
+    # result.T1 = T1  # [K]   Static Temperature
+    # result.M1 = M1  # []    Absolute Mach number
+    # result.P1 = P1  # [Pa]  Static Pressure
+    # # result.V.mid = V1  # [m/s] Absolute velocity
+    # result.S1 = S1  # [m^2] Inlet flow area
+    # result.rho1 = rho1
+
+    blade = ThreeDimensionalBlade()
+    inlet_thermo_point = ThermoPoint(pressure=P, density=rho, temperature=T)
+    inlet = CompressorStage(thermodynamic_point=inlet_thermo_point, blade=blade)
+
+    return inlet

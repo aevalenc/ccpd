@@ -8,6 +8,7 @@ Update: 24 July, 2020
 from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
 from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.data_types.inputs import Inputs
+from ccpd.utilities.inlet_loop_calcs import inlet_loop
 import json
 import sys
 import numpy as np
@@ -127,9 +128,9 @@ def centrifugal_calcs(
     # end
 
     # %% [F]:Setup Inlet Loop
-    # itrmax = 1000;
-    # tol    = 1e-3;
-    # inlet = inlet_loop(rho01, D1.hub, w, D2, itrmax, tol);
+    itrmax = 1000
+    tol = 1e-3
+    inlet = inlet_loop(rho01, D1.hub, w, D2, itrmax, tol)
 
     # %% [F.1]:Inlet Geometry
     # D1.tip = inlet.Dtip;              	% [m] Tip diameter

@@ -7,17 +7,6 @@
 import numpy as np
 
 
-class ThreeDimensionalBlade:
-    """
-    3D blade geometry
-    """
-
-    def __init__(self) -> None:
-        self.hub = VelocityTriangle()
-        self.mid = VelocityTriangle()
-        self.tip = VelocityTriangle()
-
-
 class VelocityTriangle:
     """
     Velocity Triangle class is composed of an axial and tangential
@@ -37,3 +26,16 @@ class VelocityTriangle:
     def CalculateComponentsWithMagnitudeAndAngle(self) -> None:
         self.axial = self.magnitude * np.cos(self.angle)
         self.tangential = self.magnitude * np.sin(self.angle)
+
+
+class ThreeDimensionalBlade:
+    """
+    3D blade geometry
+    """
+
+    def __init__(
+        self, hub=VelocityTriangle(), mid=VelocityTriangle(), tip=VelocityTriangle()
+    ) -> None:
+        self.__hub = hub
+        self.__mid = mid
+        self.__tip = tip

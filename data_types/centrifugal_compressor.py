@@ -12,9 +12,11 @@ class CompressorStage:
     Compressor stage class data type
     """
 
-    def __init__(self) -> None:
-        self.thermodynamic_point = ThermoPoint()
-        self.blade = ThreeDimensionalBlade()
+    def __init__(
+        self, thermodynamic_point=ThermoPoint(), blade=ThreeDimensionalBlade()
+    ) -> None:
+        self.__thermodynamic_point = thermodynamic_point
+        self.__blade = blade
 
 
 class CompressorGeometry:
