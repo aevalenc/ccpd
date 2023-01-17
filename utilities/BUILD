@@ -5,6 +5,7 @@ py_library(
     visibility = ["//ccpd:__subpackages__"],
     deps = [
         "//ccpd/data_types:centrifugal_compressor",
+        "//ccpd/data_types:inputs",
         "//ccpd/data_types:working_fluid",
     ],
 )
