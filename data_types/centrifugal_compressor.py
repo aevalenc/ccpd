@@ -1,6 +1,6 @@
 """
   Author: Alejandro Valencia
-  Update: 11 December, 2022
+  Update: 24 January, 2022
 """
 
 from ccpd.data_types.thermo_point import ThermoPoint
@@ -15,8 +15,8 @@ class CompressorStage:
     def __init__(
         self, thermodynamic_point=ThermoPoint(), blade=ThreeDimensionalBlade()
     ) -> None:
-        self.__thermodynamic_point = thermodynamic_point
-        self.__blade = blade
+        self.thermodynamic_point = thermodynamic_point
+        self.blade = blade
 
 
 class CompressorGeometry:
