@@ -6,6 +6,7 @@
 """
 
 from scipy import optimize
+import numpy as np
 
 #
 # This function takes initial design parameters and calculates the inlet
@@ -28,6 +29,27 @@ from scipy import optimize
 #
 
 
-def ComputeTipDiameter(function) -> float:
-    # function = lambda x: x * (x - 1)
-    return optimize.minimize(function, bounds=[0.4, 0.6])
+def ComputeTipDiameter(
+    rotational_speed: float,
+    mass_flow_rate: float,
+    density: float,
+    hub_diameter: float,
+    initial_guess: float,
+    bounds: list,
+) -> float:
+    # function = lambda x, *args: x * (x - args[0])
+    function = lambda tip_diameter, *args: (
+        args[0] ** 2 * (tip_diameter**2 / 4.0)
+        + (args[1] / (args[2] * np.pi / 4 * (tip_diameter**2 - args[3] ** 2))) ** 2
+    )
+
+    Bounds = optimize.Bounds(bounds[0], bounds[1])
+
+    result = optimize.minimize(
+        function,
+        initial_guess,
+        args=(rotational_speed, mass_flow_rate, density, hub_diameter),
+        bounds=Bounds,
+    )
+
+    return result.x[0]

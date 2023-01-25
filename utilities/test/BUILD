@@ -5,5 +5,6 @@ py_test(
     srcs = ["tip_diameter_tests.py"],
     deps = [
         "//ccpd/utilities:tip_diameter",
+        "@python_deps_scipy//:pkg",
     ],
 )
