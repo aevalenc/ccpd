@@ -32,6 +32,7 @@ py_library(
         "//ccpd/data_types:centrifugal_compressor",
         "//ccpd/data_types:inputs",
         "//ccpd/data_types:working_fluid",
+        "@python_deps_numpy//:pkg",
         "@python_deps_scipy//:pkg",
     ],
 )

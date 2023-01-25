@@ -2,7 +2,7 @@
   Author: Alejandro Valencia
   Centrifugal Compressor Preliminary Design
   Inlet Iteration Loop
-  Update: 24 July, 2020
+  Update: 24 January, 2023
 """
 
 from ccpd.data_types.centrifugal_compressor import CompressorStage
@@ -12,6 +12,7 @@ from ccpd.data_types.inputs import Inputs
 from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.utilities.tip_diameter import ComputeTipDiameter
 from numpy import pi, sqrt
+from colorama import Fore
 
 # This function takes initial design parameters and calculates the inlet
 # 	tip diameter minimizing the relative velocity function. This comes
@@ -24,7 +25,7 @@ from numpy import pi, sqrt
 #       The following are inputs:
 #
 #           rho0  : Initial density guess
-#           Dhub  : Hub diameter
+#           hub_diameter  : Hub diameter
 #           itermx: Max iterations
 #           tol   : Tolerance
 #           monitor_residual: String either 'yes' or 'no'
@@ -83,14 +84,13 @@ from numpy import pi, sqrt
 
 
 def inlet_loop(
-    static_density_guess,
-    Dhub,
-    w,
-    D2,
-    itrmx,
-    tolerance,
     inputs: Inputs,
     fluid: WorkingFluid,
+    static_density_guess: float,
+    rotational_speed: float,
+    outer_diameter: float,
+    max_iterations: int,
+    tolerance: float,
 ) -> CompressorStage:
 
     # global mdot PT1 TT1 cp Rh y
@@ -102,17 +102,24 @@ def inlet_loop(
     V = VelocityTriangle()
 
     # []:Optimization Loop
-    for itr in range(0, itrmx + 1):
+    for itr in range(0, max_iterations + 1):
 
         # [A]:Minimize Inlet Tip Diameter
-        Dtip = ComputeTipDiameter()
-        print(f"Mock tip diameter {Dtip:.3}")
+        tip_diameter = ComputeTipDiameter(
+            rotational_speed,
+            inputs.mass_flow_rate,
+            static_density_guess,
+            inputs.hub_diameter,
+            0.4,
+            bounds=[0.4 * outer_diameter, 0.6 * outer_diameter],
+        )
+        print(f"{Fore.YELLOW}INFO:{Fore.RESET} Mock tip diameter {tip_diameter:.3}")
         # (
-        # inputs.mass_flow_rate, static_density_guess, Dhub, D2, w
+        # inputs.mass_flow_rate, static_density_guess, hub_diameter, D2, w
         # )  # [m]
 
         # [B]:Calculate Flow Inlet Area & Absolute Velocity
-        S1 = pi / 4 * (Dtip ^ 2 - Dhub ^ 2)  # [m^2]
+        S1 = pi / 4 * (tip_diameter ^ 2 - inputs.hub_diameter ^ 2)  # [m^2]
         V.magnitude = inputs.mass_flow_rate / (static_density_guess * S1)  # [m/s]
         V.angle = 0
         V.axial = V.magnitude
@@ -137,18 +144,18 @@ def inlet_loop(
         rho.static = P.static / (fluid.specific_gas_constant * T.static)  # [kg/m^3]
 
         # [G]:Check for Convergence
-        RES = abs(rho - static_density_guess) / static_density_guess
+        density_residual = abs(rho - static_density_guess) / static_density_guess
 
         # if strcmp(monitor_residual,'yes') == 1
-        #    fprintf('Iteration: d | Residual %0.6f\n', itr, RES)
+        #    fprintf('Iteration: d | Residual %0.6f\n', itr, density_residual)
         # end
 
-        if RES < tolerance:
+        if density_residual < tolerance:
             print(
-                f"Minimization problem converged in {itr} iterations w/ residual: {RES}\n"
+                f"Minimization problem converged in {itr} iterations w/ residual: {density_residual}\n"
             )
             break
-        elif RES > 1e6:
+        elif density_residual > 1e6:
             print("WARNING solution diverging")
             break
 
@@ -158,7 +165,7 @@ def inlet_loop(
     rho.static = P.static / (fluid.specific_gas_constant * T.static)
 
     # [I]:Output
-    # result.Dtip = Dtip  # [m]   Tip diameter
+    # result.tip_diameter = Dtip  # [m]   Tip diameter
     # result.T1 = T1  # [K]   Static Temperature
     # result.M1 = M1  # []    Absolute Mach number
     # result.P1 = P1  # [Pa]  Static Pressure
@@ -166,7 +173,7 @@ def inlet_loop(
     # result.S1 = S1  # [m^2] Inlet flow area
     # result.rho1 = rho1
 
-    blade = ThreeDimensionalBlade()
+    blade = ThreeDimensionalBlade(mid=V)
     inlet_thermo_point = ThermoPoint(pressure=P, density=rho, temperature=T)
     inlet = CompressorStage(thermodynamic_point=inlet_thermo_point, blade=blade)
 
