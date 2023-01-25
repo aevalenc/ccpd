@@ -36,6 +36,6 @@ class ThreeDimensionalBlade:
     def __init__(
         self, hub=VelocityTriangle(), mid=VelocityTriangle(), tip=VelocityTriangle()
     ) -> None:
-        self.__hub = hub
-        self.__mid = mid
-        self.__tip = tip
+        self.hub = hub
+        self.mid = mid
+        self.tip = tip
