@@ -30,14 +30,23 @@ import numpy as np
 
 
 def ComputeTipDiameter(
-    rotational_speed: float,
-    mass_flow_rate: float,
-    density: float,
-    hub_diameter: float,
-    initial_guess: float,
+    rotational_speed: np.float64,
+    mass_flow_rate: np.float64,
+    density: np.float64,
+    hub_diameter: np.float64,
+    initial_guess: np.float64,
     bounds: list,
-) -> float:
-    # function = lambda x, *args: x * (x - args[0])
+) -> np.float64:
+
+    # if not type(rotational_speed) is float:
+    #     raise AssertionError(
+    #         "ERROR: rotational speed not a double, ensure isentropic work is positive"
+    #     )
+
+    assert type(rotational_speed) is np.float64, (
+        f"ERROR: rotational speed is immaginary" + f", is isentropic work positive?"
+    )
+
     function = lambda tip_diameter, *args: (
         args[0] ** 2 * (tip_diameter**2 / 4.0)
         + (args[1] / (args[2] * np.pi / 4 * (tip_diameter**2 - args[3] ** 2))) ** 2
