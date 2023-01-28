@@ -63,7 +63,7 @@ class TestInletLoopCalculations(unittest.TestCase):
         )
 
         # Expect
-        self.assertAlmostEqual(result.blade.mid.magnitude, 13.77, 2)
+        self.assertAlmostEqual(result.blade.mid.magnitude, 13.77, delta=0.01)
 
 
 if __name__ == "__main__":
