@@ -27,6 +27,14 @@ class VelocityTriangle:
         self.axial = self.magnitude * np.cos(self.angle)
         self.tangential = self.magnitude * np.sin(self.angle)
 
+    def Print(self):
+        print(
+            f"Axial: {self.axial:.6}\n"
+            + f"Tangential: {self.tangential}\n"
+            + f"Magnitude: {self.magnitude}\n"
+            + f"Angle: {self.angle}\n"
+        )
+
 
 class ThreeDimensionalBlade:
     """
