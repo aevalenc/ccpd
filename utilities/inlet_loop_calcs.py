@@ -83,6 +83,30 @@ from colorama import Fore
 #
 
 
+class InletLoopCollector:
+    def __init__(self) -> None:
+        self.name = __name__
+
+    def Print(self):
+        print(f"{Fore.YELLOW}INFO: {__name__}{Fore.RESET}")
+        [
+            print(f"\t{key}: {value}")
+            for key, value in self.__dict__.items()
+            if key != "name"
+        ]
+
+
+def IsInletLoopConverged(density_residual, tolerance, iteration, max_iterations):
+    if density_residual < tolerance:
+        print(
+            f"Minimization problem converged in {iteration} iterations w/ residual: {density_residual}\n"
+        )
+        return True
+    elif density_residual > 1e6:
+        print(f"{Fore.YELLOW}WARNING: solution diverging")
+        return False
+
+
 def inlet_loop(
     inputs: Inputs,
     fluid: WorkingFluid,
@@ -93,84 +117,81 @@ def inlet_loop(
     tolerance: float,
 ) -> CompressorStage:
 
-    # global mdot PT1 TT1 cp Rh y
+    inlet_loop_collector = InletLoopCollector()
+
     # Quantities
     T = ThermodynamicVariable()
     P = ThermodynamicVariable()
     rho = ThermodynamicVariable()
-
     V = VelocityTriangle()
 
-    # []:Optimization Loop
-    for itr in range(0, max_iterations + 1):
+    T.total = inputs.inlet_total_temperature
+    P.total = inputs.inlet_total_pressure
 
-        # [A]:Minimize Inlet Tip Diameter
+    # []:Optimization Loop
+    for iteration in range(0, max_iterations):
+
+        # Minimize Inlet Tip Diameter
         tip_diameter = ComputeTipDiameter(
             rotational_speed,
             inputs.mass_flow_rate,
             static_density_guess,
             inputs.hub_diameter,
-            0.4,
+            0.2,
             bounds=[0.4 * outer_diameter, 0.6 * outer_diameter],
         )
-        print(f"{Fore.YELLOW}INFO:{Fore.RESET} Mock tip diameter {tip_diameter:.3}")
-        # (
-        # inputs.mass_flow_rate, static_density_guess, hub_diameter, D2, w
-        # )  # [m]
 
-        # [B]:Calculate Flow Inlet Area & Absolute Velocity
-        S1 = pi / 4 * (tip_diameter ^ 2 - inputs.hub_diameter ^ 2)  # [m^2]
-        V.magnitude = inputs.mass_flow_rate / (static_density_guess * S1)  # [m/s]
-        V.angle = 0
-        V.axial = V.magnitude
-        V.tangential = 0
+        inlet_loop_collector.tip_diameter = tip_diameter
 
-        # [C]:Static Temperature
-        T.static = inputs.inlet_total_temperature - V.magnitude ^ 2 / (
-            2 * fluid.specific_heat
-        )  # [K]
+        inlet_flow_area = (
+            pi / 4.0 * (tip_diameter**2 - inputs.hub_diameter**2)
+        )  # [m^2]
 
-        # [D]:Mach number
-        M1 = V.magnitude / sqrt(
+        V.magnitude = inputs.mass_flow_rate / (
+            static_density_guess * inlet_flow_area
+        )  # [m/s]
+        V.angle = 0.0
+        V.CalculateComponentsWithMagnitudeAndAngle()
+
+        T.static = T.total - V.magnitude**2 / (2 * fluid.specific_heat)  # [K]
+        inlet_loop_collector.static_temperature = T.static
+
+        mach_number = V.magnitude / sqrt(
             fluid.specific_ratio * fluid.specific_gas_constant * T.static
         )  # []
 
-        # [E]:Static Pressure
-        P.static = P.total / (1 + (fluid.specific_ratio - 1) / 2 * M1 ^ 2) ^ (
+        P.static = P.total / (
+            1 + (fluid.specific_ratio - 1) / 2 * mach_number**2
+        ) ** (
             fluid.specific_ratio / (fluid.specific_ratio - 1)
         )  # [Pa]
 
-        # [F]:Recalculate Density
+        inlet_loop_collector.static_pressure = P.static
+
         rho.static = P.static / (fluid.specific_gas_constant * T.static)  # [kg/m^3]
 
-        # [G]:Check for Convergence
-        density_residual = abs(rho - static_density_guess) / static_density_guess
+        density_residual = abs(rho.static - static_density_guess) / static_density_guess
+        inlet_loop_collector.density_residual = density_residual
 
-        # if strcmp(monitor_residual,'yes') == 1
-        #    fprintf('Iteration: d | Residual %0.6f\n', itr, density_residual)
-        # end
-
-        if density_residual < tolerance:
-            print(
-                f"Minimization problem converged in {itr} iterations w/ residual: {density_residual}\n"
-            )
-            break
-        elif density_residual > 1e6:
-            print("WARNING solution diverging")
+        if IsInletLoopConverged(density_residual, tolerance, iteration, max_iterations):
             break
 
-        # [H]:Reset Density
-        static_density_guess = rho
+        if iteration == max_iterations:
+            print(f"{Fore.YELLOW}WARNING: Max iterations reached")
+
+        # Reset Density
+        static_density_guess = rho.static
+        inlet_loop_collector.Print()
 
     rho.static = P.static / (fluid.specific_gas_constant * T.static)
 
     # [I]:Output
     # result.tip_diameter = Dtip  # [m]   Tip diameter
     # result.T1 = T1  # [K]   Static Temperature
-    # result.M1 = M1  # []    Absolute Mach number
+    # result.mach_number = M1  # []    Absolute Mach number
     # result.P1 = P1  # [Pa]  Static Pressure
     # # result.V.mid = V1  # [m/s] Absolute velocity
-    # result.S1 = S1  # [m^2] Inlet flow area
+    # result.inlet_flow_area = S1  # [m^2] Inlet flow area
     # result.rho1 = rho1
 
     blade = ThreeDimensionalBlade(mid=V)

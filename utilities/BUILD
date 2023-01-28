@@ -21,6 +21,7 @@ py_library(
         "//ccpd/data_types:inputs",
         "//ccpd/data_types:thermo_point",
         "//ccpd/data_types:working_fluid",
+        "@python_deps_colorama//:pkg",
     ],
 )
 
