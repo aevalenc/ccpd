@@ -136,14 +136,13 @@ def centrifugal_calcs(
     inlet_loop_tolerance = 1e-3
     inlet = inlet_loop(
         inputs,
-        fluid,
+        working_fluid,
         density.total,
         rotational_speed,
         compressor.geometry.outer_diameter,
         inlet_loop_max_iterations,
         inlet_loop_tolerance,
     )
-    inlet_loop()
 
     # %% [F.1]:Inlet Geometry
     # D1.tip = inlet.Dtip;              	% [m] Tip diameter
