@@ -1,8 +1,8 @@
 """ 
   Author: Alejandro Valencia
   Centrifugal Compressor Preliminary Design
-  Inlet Iteration Loop
-  Update: 24 July, 2020
+  Minimize tip diameter
+  Update: 28 January, 2023
 """
 
 from scipy import optimize
@@ -38,12 +38,7 @@ def ComputeTipDiameter(
     bounds: list,
 ) -> np.float64:
 
-    # if not type(rotational_speed) is float:
-    #     raise AssertionError(
-    #         "ERROR: rotational speed not a double, ensure isentropic work is positive"
-    #     )
-
-    assert type(rotational_speed) is np.float64, (
+    assert not isinstance(rotational_speed, complex), (
         f"ERROR: rotational speed is immaginary" + f", is isentropic work positive?"
     )
 
@@ -54,6 +49,7 @@ def ComputeTipDiameter(
 
     Bounds = optimize.Bounds(bounds[0], bounds[1])
 
+    # TODO: create a minimization function to reduce the overkill of scipy's optimize.minimize
     result = optimize.minimize(
         function,
         initial_guess,
