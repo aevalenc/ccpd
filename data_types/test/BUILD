@@ -8,3 +8,12 @@ py_test(
         "@python_deps_numpy//:pkg",
     ],
 )
+
+py_test(
+    name = "centrifugal_compressor_tests",
+    srcs = ["centrifugal_compressor_tests.py"],
+    deps = [
+        "//ccpd/data_types:centrifugal_compressor",
+        "@python_deps_numpy//:pkg",
+    ],
+)
