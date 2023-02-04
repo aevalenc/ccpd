@@ -5,6 +5,7 @@
 
 from ccpd.data_types.thermo_point import ThermoPoint
 from ccpd.data_types.velocity_triangle import ThreeDimensionalBlade
+import numpy as np
 
 
 class CompressorStage:
@@ -24,11 +25,36 @@ class CompressorGeometry:
     Compressor geometry class data type:
     """
 
+    # TODO: Consider using slots to preallocate class members
     def __init__(self) -> None:
         self.number_of_blades = 0
-        self.hub_diameter = 0.0
-        self.inner_diameter = 0.0
+
+        self.inlet_hub_diameter = 0.0
+        self.inlet_mid_diameter = 0.0
+        self.inlet_tip_diameter = 0.0
+        self.inlet_blade_height = 0.0
+        self.inlet_blade_ratio = 0.0
+
         self.outer_diameter = 0.0
+        self.outlet_blade_height = 0.0
+        self.outer_blade_height_ratio = 0.0
+
+    def CalculateInletBladeHeightAndRatios(self):
+        assert (np.greater(self.inlet_hub_diameter, 0.0)) and (
+            np.greater(self.inlet_tip_diameter, self.inlet_hub_diameter)
+        ), f"Error: hub diameter not greater than tip diameter"
+
+        assert np.greater(self.outer_diameter, 0.0), f"Error: outer diameter not set"
+
+        self.inlet_blade_height = (
+            self.inlet_tip_diameter - self.inlet_hub_diameter
+        ) / 2.0
+        self.inlet_mid_diameter = (
+            self.inlet_tip_diameter + self.inlet_hub_diameter
+        ) / 2.0
+
+        self.inlet_blade_ratio = self.inlet_hub_diameter / self.inlet_tip_diameter
+        self.outer_blade_height_ratio = self.inlet_tip_diameter / self.outer_diameter
 
 
 class CentrifugalCompressor:
