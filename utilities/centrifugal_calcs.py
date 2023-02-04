@@ -6,8 +6,10 @@ Update: 24 July, 2020
 """
 
 from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
+from ccpd.data_types.thermo_point import ThermodynamicVariable
 from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.data_types.inputs import Inputs
+from ccpd.utilities.inlet_loop_calcs import inlet_loop
 import json
 import sys
 import numpy as np
@@ -73,12 +75,12 @@ def centrifugal_calcs(
         * ((inputs.compression_ratio**isentropic_exponent) - 1.0)
     )
 
-    compressor.inlet.thermodynamic_point.density.total = inputs.inlet_total_pressure / (
+    # @todo Create a method within the centrifugal compressor class to initialize the inlet with these initial values
+    density = ThermodynamicVariable()
+    density.total = inputs.inlet_total_pressure / (
         working_fluid.specific_gas_constant * inputs.inlet_total_temperature
     )
-    total_volume_flow_rate = (
-        inputs.mass_flow_rate / compressor.inlet.thermodynamic_point.density.total
-    )
+    total_volume_flow_rate = inputs.mass_flow_rate / density.total
 
     compressor.geometry.outer_diameter = (
         specific_diameter * np.sqrt(total_volume_flow_rate) / (isentropic_work**0.25)
@@ -88,6 +90,9 @@ def centrifugal_calcs(
         specific_speed * (isentropic_work**0.75) / np.sqrt(total_volume_flow_rate)
     )
     # wRPM  = w * 60/(2*pi);                  % [RPM]
+    #     compressor.inlet.thermodynamic_point.
+    # compressor.inlet.thermodynamic_point.
+    # compressor.inlet.thermodynamic_point.
 
     # [C]:Calculate Velocities and Eulerian Work
     compressor.outlet.blade.mid.tangential = (
@@ -103,7 +108,7 @@ def centrifugal_calcs(
         compressor.outlet.blade.mid.tangential
     )
     compressor.flow_coefficient = inputs.mass_flow_rate / (
-        compressor.inlet.thermodynamic_point.density.total
+        density.total
         * (
             compressor.outlet.blade.mid.tangential
             * (compressor.geometry.outer_diameter / 2.0)
@@ -127,9 +132,17 @@ def centrifugal_calcs(
     # end
 
     # %% [F]:Setup Inlet Loop
-    # itrmax = 1000;
-    # tol    = 1e-3;
-    # inlet = inlet_loop(rho01, D1.hub, w, D2, itrmax, tol);
+    inlet_loop_max_iterations = 1000
+    inlet_loop_tolerance = 1e-3
+    inlet = inlet_loop(
+        inputs,
+        working_fluid,
+        density.total,
+        rotational_speed,
+        compressor.geometry.outer_diameter,
+        inlet_loop_max_iterations,
+        inlet_loop_tolerance,
+    )
 
     # %% [F.1]:Inlet Geometry
     # D1.tip = inlet.Dtip;              	% [m] Tip diameter

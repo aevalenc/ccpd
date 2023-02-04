@@ -1,8 +1,8 @@
 {
   "air": {
-    "specific_heat": 1.124,
-    "specific_ratio": 0.234,
-    "specific_gas_constant": 266.4,
-    "kinematic_viscosity": 0.0033
+    "specific_heat": 1006.0,
+    "specific_ratio": 1.4,
+    "specific_gas_constant": 287.0,
+    "kinematic_viscosity": 18.13e-6
   }
 }

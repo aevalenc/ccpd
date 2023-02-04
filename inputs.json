@@ -1,7 +1,7 @@
 {
-  "mass_flow_rate": 5,
-  "inlet_total_pressure": 100000,
-  "inlet_total_temperature": 293,
+  "mass_flow_rate": 5.0,
+  "inlet_total_pressure": 100000.0,
+  "inlet_total_temperature": 293.0,
   "compression_ratio": 1.25,
   "surface_roughness": 0.0025,
   "tip_clearance": 0.001,
