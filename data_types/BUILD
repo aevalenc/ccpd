@@ -30,13 +30,13 @@ py_library(
     visibility = ["//ccpd:__subpackages__"],
     deps = [
         ":thermo_point",
-        ":velocity_triangle",
+        ":three_dimensional_blade",
     ],
 )
 
 py_library(
-    name = "velocity_triangle",
-    srcs = ["velocity_triangle.py"],
+    name = "three_dimensional_blade",
+    srcs = ["three_dimensional_blade.py"],
     visibility = ["//ccpd:__subpackages__"],
     deps = ["@python_deps_numpy//:pkg"],
 )

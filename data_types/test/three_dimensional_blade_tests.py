@@ -4,7 +4,7 @@ Update: 11 December, 2022
 """
 
 import unittest
-import ccpd.data_types.velocity_triangle as vt
+import ccpd.data_types.three_dimensional_blade as vt
 import numpy as np
 
 

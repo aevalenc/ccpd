@@ -1,6 +1,6 @@
 """
     Author: Alejandro Valencia
-    Update: 11 December, 2022
+    Update: 04 February, 2022
     Blade related classes
 """
 
@@ -8,6 +8,7 @@ from dataclasses import dataclass
 import numpy as np
 
 
+@dataclass
 class VelocityVector:
     """
     Velocity Triangle class is composed of an axial and tangential
@@ -15,11 +16,15 @@ class VelocityVector:
     reference coordinate frame
     """
 
-    def __init__(self) -> None:
-        self.axial = 0.0
-        self.tangential = 0.0
-        self.magnitude = 0.0
-        self.angle = 0.0
+    axial: float = 0.0
+    tangential: float = 0.0
+    magnitude: float = 0.0
+    angle: float = 0.0
+
+    def __add__(self, other):
+        return VelocityVector(
+            self.axial + other.axial, self.tangential + other.tangential
+        )
 
     def CalculateMagnitudeWithComponents(self) -> None:
         self.magnitude = np.sqrt(np.square(self.axial) + np.square(self.tangential))
@@ -43,9 +48,9 @@ class VelocityTriangle:
     3D blade geometry
     """
 
-    absolute: VelocityVector
-    relative: VelocityVector
-    translational: VelocityVector
+    absolute: VelocityVector = VelocityVector()
+    relative: VelocityVector = VelocityVector()
+    translational: VelocityVector = VelocityVector()
 
     # def __init__(
     #     self, absolute=VelocityVector(), mid=VelocityVector(), tip=VelocityVector()
@@ -53,3 +58,10 @@ class VelocityTriangle:
     #     self.hub = hub
     #     self.mid = mid
     #     self.tip = tip
+
+
+@dataclass
+class ThreeDimensionalBlade:
+    hub: VelocityTriangle = VelocityTriangle()
+    mid: VelocityTriangle = VelocityTriangle()
+    tip: VelocityTriangle = VelocityTriangle()

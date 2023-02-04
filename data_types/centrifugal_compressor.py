@@ -4,7 +4,7 @@
 """
 
 from ccpd.data_types.thermo_point import ThermoPoint
-from ccpd.data_types.velocity_triangle import ThreeDimensionalBlade
+from ccpd.data_types.three_dimensional_blade import ThreeDimensionalBlade
 import numpy as np
 
 
