@@ -8,7 +8,7 @@ import ccpd.data_types.velocity_triangle as vt
 import numpy as np
 
 
-class TestCalculateMagnitudeWithComponents(unittest.TestCase, vt.VelocityTriangle):
+class TestCalculateMagnitudeWithComponents(unittest.TestCase, vt.VelocityVector):
     def test_given_valid_components_expect_valid_magnitude(self):
         # Given
         self.axial = 3.0
@@ -33,7 +33,7 @@ class TestCalculateMagnitudeWithComponents(unittest.TestCase, vt.VelocityTriangl
 
 
 class TestCalculateComponentsWithMagnitudeAndAngle(
-    unittest.TestCase, vt.VelocityTriangle
+    unittest.TestCase, vt.VelocityVector
 ):
     def test_given_valid_magnitude_and_angle_expect_valid_components(self):
         # Given

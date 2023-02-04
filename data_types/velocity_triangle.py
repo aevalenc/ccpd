@@ -4,10 +4,11 @@
     Blade related classes
 """
 
+from dataclasses import dataclass
 import numpy as np
 
 
-class VelocityTriangle:
+class VelocityVector:
     """
     Velocity Triangle class is composed of an axial and tangential
     component along with the vector magnitude and orientation in a global
@@ -36,14 +37,19 @@ class VelocityTriangle:
         )
 
 
-class ThreeDimensionalBlade:
+@dataclass
+class VelocityTriangle:
     """
     3D blade geometry
     """
 
-    def __init__(
-        self, hub=VelocityTriangle(), mid=VelocityTriangle(), tip=VelocityTriangle()
-    ) -> None:
-        self.hub = hub
-        self.mid = mid
-        self.tip = tip
+    absolute: VelocityVector
+    relative: VelocityVector
+    translational: VelocityVector
+
+    # def __init__(
+    #     self, absolute=VelocityVector(), mid=VelocityVector(), tip=VelocityVector()
+    # ) -> None:
+    #     self.hub = hub
+    #     self.mid = mid
+    #     self.tip = tip
