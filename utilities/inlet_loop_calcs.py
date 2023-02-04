@@ -5,7 +5,7 @@
   Update: 24 January, 2023
 """
 
-from ccpd.data_types.centrifugal_compressor import CompressorStage
+from ccpd.data_types.centrifugal_compressor import CompressorGeometry, CompressorStage
 from ccpd.data_types.velocity_triangle import VelocityTriangle, ThreeDimensionalBlade
 from ccpd.data_types.thermo_point import ThermodynamicVariable, ThermoPoint
 from ccpd.data_types.inputs import Inputs
@@ -112,7 +112,7 @@ def inlet_loop(
     fluid: WorkingFluid,
     static_density_guess: float,
     rotational_speed: float,
-    outer_diameter: float,
+    compressor_geometry: CompressorGeometry,
     max_iterations: int,
     tolerance: float,
 ) -> CompressorStage:
@@ -138,9 +138,13 @@ def inlet_loop(
             static_density_guess,
             inputs.hub_diameter,
             0.2,
-            bounds=[0.4 * outer_diameter, 0.6 * outer_diameter],
+            bounds=[
+                0.4 * compressor_geometry.outer_diameter,
+                0.6 * compressor_geometry.outer_diameter,
+            ],
         )
 
+        compressor_geometry.inlet_tip_diameter = tip_diameter
         inlet_loop_collector.tip_diameter = tip_diameter
 
         inlet_flow_area = (

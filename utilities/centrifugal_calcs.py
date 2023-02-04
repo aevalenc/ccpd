@@ -139,17 +139,13 @@ def centrifugal_calcs(
         working_fluid,
         density.total,
         rotational_speed,
-        compressor.geometry.outer_diameter,
+        compressor.geometry,
         inlet_loop_max_iterations,
         inlet_loop_tolerance,
     )
 
     # %% [F.1]:Inlet Geometry
-    # D1.tip = inlet.Dtip;              	% [m] Tip diameter
-    # b1     = (D1.tip - D1.hub) / 2;   	% [m] blade height
-    # D1.mid = (D1.tip + D1.hub) / 2;   	% [m] Mean diameter
-    # rtd2   = D1.tip / D2;             	% []  Inlet tip dia. to outlet dia. ratio
-    # rht    = D1.hub / D1.tip;         	% []  Inlet hub dia. to inlet tip dia. ratio
+    compressor.geometry.CalculateInletBladeHeightAndRatios()
 
     # %% [F.2]:Inlet Velocity Triangles
     # % As a recap, our knowns are U2, V2.tan, and V1.mag. With these known
