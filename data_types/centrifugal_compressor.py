@@ -26,25 +26,30 @@ class CompressorGeometry:
     """
 
     # TODO: Consider using slots to preallocate class members
-    def __init__(self) -> None:
-        self.number_of_blades = 0
+    number_of_blades = 0
 
-        self.inlet_hub_diameter = 0.0
-        self.inlet_mid_diameter = 0.0
-        self.inlet_tip_diameter = 0.0
-        self.inlet_blade_height = 0.0
-        self.inlet_blade_ratio = 0.0
+    inlet_hub_diameter = 0.0
+    inlet_mid_diameter = 0.0
+    inlet_tip_diameter = 0.0
+    inlet_blade_height = 0.0
+    inlet_blade_ratio = 0.0
 
-        self.outer_diameter = 0.0
-        self.outlet_blade_height = 0.0
-        self.outer_blade_height_ratio = 0.0
+    outer_diameter = 0.0
+    outlet_blade_height = 0.0
+    outer_blade_height_ratio = 0.0
 
     def CalculateInletBladeHeightAndRatios(self):
-        assert (np.greater(self.inlet_hub_diameter, 0.0)) and (
-            np.greater(self.inlet_tip_diameter, self.inlet_hub_diameter)
-        ), f"Error: hub diameter not greater than tip diameter"
+        assert not np.isclose(
+            self.inlet_hub_diameter, 0.0
+        ), f"Error: hub diameter not not set"
 
-        assert np.greater(self.outer_diameter, 0.0), f"Error: outer diameter not set"
+        assert np.greater(
+            self.inlet_tip_diameter, self.inlet_hub_diameter
+        ), f"Error: tip diameter not greater than hub diameter"
+
+        assert not np.isclose(
+            self.outer_diameter, 0.0
+        ), f"Error: outer diameter not set"
 
         self.inlet_blade_height = (
             self.inlet_tip_diameter - self.inlet_hub_diameter
