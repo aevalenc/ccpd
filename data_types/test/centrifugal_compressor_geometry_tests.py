@@ -4,7 +4,7 @@ Update: 4 February, 2023
 """
 
 import unittest
-import ccpd.data_types.centrifugal_compressor as cc
+from ccpd.data_types.centrifugal_compressor_geometry import CompressorGeometry
 import numpy as np
 
 
@@ -14,7 +14,7 @@ class TestCentrifugalCompressorGeometryClass(unittest.TestCase):
     """
 
     def setUp(self) -> None:
-        self.compressor_geometry = cc.CompressorGeometry()
+        self.compressor_geometry = CompressorGeometry()
 
     def test_GivenValidInputDiameters_ExpectValidRatios(self):
         # Given

@@ -4,16 +4,17 @@ py_test(
     name = "three_dimensional_blade_tests",
     srcs = ["three_dimensional_blade_tests.py"],
     deps = [
+        "//ccpd/data_types:centrifugal_compressor_geometry",
         "//ccpd/data_types:three_dimensional_blade",
         "@python_deps_numpy//:pkg",
     ],
 )
 
 py_test(
-    name = "centrifugal_compressor_tests",
-    srcs = ["centrifugal_compressor_tests.py"],
+    name = "centrifugal_compressor_geometry_tests",
+    srcs = ["centrifugal_compressor_geometry_tests.py"],
     deps = [
-        "//ccpd/data_types:centrifugal_compressor",
+        "//ccpd/data_types:centrifugal_compressor_geometry",
         "@python_deps_numpy//:pkg",
     ],
 )
