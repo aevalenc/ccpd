@@ -4,7 +4,7 @@ Update: 24 January, 2022
 """
 
 import unittest
-from ccpd.utilities.tip_diameter import ComputeTipDiameter
+from ccpd.utilities.inlet.tip_diameter import ComputeTipDiameter
 
 
 class TestComputeTipDiameter(unittest.TestCase):

@@ -2,15 +2,19 @@
   Author: Alejandro Valencia
   Centrifugal Compressor Preliminary Design
   Inlet Iteration Loop
-  Update: 24 January, 2023
+  Update: 30 April, 2023
 """
 
 from ccpd.data_types.centrifugal_compressor import CompressorGeometry, CompressorStage
-from ccpd.data_types.velocity_triangle import VelocityTriangle, ThreeDimensionalBlade
+from ccpd.data_types.three_dimensional_blade import (
+    ThreeDimensionalBlade,
+    VelocityVector,
+    VelocityTriangle,
+)
 from ccpd.data_types.thermo_point import ThermodynamicVariable, ThermoPoint
 from ccpd.data_types.inputs import Inputs
 from ccpd.data_types.working_fluid import WorkingFluid
-from ccpd.utilities.tip_diameter import ComputeTipDiameter
+from ccpd.utilities.inlet.tip_diameter import ComputeTipDiameter
 from numpy import pi, sqrt
 from colorama import Fore
 
@@ -87,10 +91,10 @@ class InletLoopCollector:
     def __init__(self) -> None:
         self.name = __name__
 
-    def Print(self):
+    def Print(self) -> None:
         print(f"{Fore.YELLOW}INFO: {__name__}{Fore.RESET}")
         [
-            print(f"\t{key}: {value}")
+            print(f"\t{key}: {value:4.3}")
             for key, value in self.__dict__.items()
             if key != "name"
         ]
@@ -99,7 +103,7 @@ class InletLoopCollector:
 def IsInletLoopConverged(density_residual, tolerance, iteration, max_iterations):
     if density_residual < tolerance:
         print(
-            f"Minimization problem converged in {iteration} iterations w/ residual: {density_residual}\n"
+            f"Minimization problem converged in {iteration} iterations w/ residual: {density_residual:8.6}\n"
         )
         return True
     elif density_residual > 1e6:
@@ -107,7 +111,7 @@ def IsInletLoopConverged(density_residual, tolerance, iteration, max_iterations)
         return False
 
 
-def inlet_loop(
+def InletLoop(
     inputs: Inputs,
     fluid: WorkingFluid,
     static_density_guess: float,
@@ -123,7 +127,7 @@ def inlet_loop(
     T = ThermodynamicVariable()
     P = ThermodynamicVariable()
     rho = ThermodynamicVariable()
-    V = VelocityTriangle()
+    V = VelocityVector()
 
     T.total = inputs.inlet_total_temperature
     P.total = inputs.inlet_total_pressure
@@ -190,15 +194,10 @@ def inlet_loop(
     rho.static = P.static / (fluid.specific_gas_constant * T.static)
 
     # [I]:Output
-    # result.tip_diameter = Dtip  # [m]   Tip diameter
-    # result.T1 = T1  # [K]   Static Temperature
     # result.mach_number = M1  # []    Absolute Mach number
-    # result.P1 = P1  # [Pa]  Static Pressure
-    # # result.V.mid = V1  # [m/s] Absolute velocity
     # result.inlet_flow_area = S1  # [m^2] Inlet flow area
-    # result.rho1 = rho1
 
-    blade = ThreeDimensionalBlade(mid=V)
+    blade = ThreeDimensionalBlade(mid=VelocityTriangle(absolute=V))
     inlet_thermo_point = ThermoPoint(pressure=P, density=rho, temperature=T)
     inlet = CompressorStage(thermodynamic_point=inlet_thermo_point, blade=blade)
 

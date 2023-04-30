@@ -19,10 +19,6 @@ class ThermoPoint:
     Thermo point class data type
     """
 
-    # self.__pressure = ThermodynamicVariable()
-    # self.__temperature = ThermodynamicVariable()
-    # self.__density = ThermodynamicVariable()
-
     def __init__(
         self,
         pressure=ThermodynamicVariable(),

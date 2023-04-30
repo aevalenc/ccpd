@@ -1,15 +1,13 @@
 """
 Author: Alejandro Valencia
-Update: 24 January, 2022
+Update: 30 April, 2023
 """
 
 from dataclasses import dataclass
 import unittest
-from ccpd.data_types.inputs import Inputs
 from ccpd.data_types.thermo_point import ThermodynamicVariable
-from ccpd.data_types.working_fluid import WorkingFluid
-from ccpd.utilities.inlet_loop_calcs import inlet_loop
-from dataclasses import dataclass
+from ccpd.data_types.centrifugal_compressor_geometry import CompressorGeometry
+from ccpd.utilities.inlet.inlet_loop_calcs import InletLoop
 
 
 @dataclass
@@ -39,7 +37,18 @@ class MockWorkingFluid:
     kinematic_viscosity: float = 18.13e-6
 
 
+def CreateBasicCompressorGeometry() -> CompressorGeometry:
+    compressor_geometry = CompressorGeometry()
+    compressor_geometry.inlet_hub_diameter = 0.4
+    compressor_geometry.inlet_tip_diameter = 0.6
+    compressor_geometry.outer_diameter = 0.8
+    return compressor_geometry
+
+
 class TestInletLoopCalculations(unittest.TestCase):
+
+    tolerance = 0.001
+
     def test_given_valid_inputs_expect_valid_results(self):
         # Given
         inputs = MockInputs()
@@ -47,12 +56,12 @@ class TestInletLoopCalculations(unittest.TestCase):
         rotational_speed = 35.0
         density = ThermodynamicVariable()
         density.total = 0.125
-        outer_diameter = 1.1
+        outer_diameter = CreateBasicCompressorGeometry()
         inlet_loop_max_iterations = 10
         inlet_loop_tolerance = 0.001
 
         # Call
-        result = inlet_loop(
+        result = InletLoop(
             inputs,
             working_fluid,
             density.total,
@@ -63,7 +72,9 @@ class TestInletLoopCalculations(unittest.TestCase):
         )
 
         # Expect
-        self.assertAlmostEqual(result.blade.mid.magnitude, 13.77, delta=0.01)
+        self.assertAlmostEqual(
+            result.blade.mid.absolute.magnitude, 28.695, delta=self.tolerance
+        )
 
 
 if __name__ == "__main__":

@@ -2,14 +2,14 @@
 Author: Alejandro Valencia
 Centrifugal Compressor Preliminary Design
 Initial Calculations
-Update: 24 July, 2020
+Update: 30 April, 2023
 """
 
 from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
 from ccpd.data_types.thermo_point import ThermodynamicVariable
 from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.data_types.inputs import Inputs
-from ccpd.utilities.inlet_loop_calcs import inlet_loop
+from ccpd.utilities.inlet.inlet_loop_calcs import InletLoop
 import json
 import sys
 import numpy as np
@@ -37,7 +37,7 @@ def centrifugal_calcs(
               mat: Compressor material
 
     The following are outputs: In this case the output is collected in one
-    single MATLAB data structure result. This structure contains five main
+    single data structure result. This structure contains five main
     sub data structures: inlet, outlet, comp, vldiff, and diff
 
               inlet: structure containing thermodynamic and velocity
@@ -62,13 +62,13 @@ def centrifugal_calcs(
     fluid_database = json.load(fluid_database_file)
     working_fluid = WorkingFluid(fluid_database[fluid])
 
+    # [B]:Initial Calculations
     isentropic_exponent = (
         working_fluid.specific_ratio - 1.0
     ) / working_fluid.specific_ratio
 
     inverse_isentropic_exponent = 1.0 / isentropic_exponent
 
-    # [B]:Initial Calculations
     isentropic_work = (
         working_fluid.specific_heat
         * inputs.inlet_total_temperature
@@ -76,6 +76,7 @@ def centrifugal_calcs(
     )
 
     # @todo Create a method within the centrifugal compressor class to initialize the inlet with these initial values
+    compressor.geometry.inlet_hub_diameter = inputs.hub_diameter
     density = ThermodynamicVariable()
     density.total = inputs.inlet_total_pressure / (
         working_fluid.specific_gas_constant * inputs.inlet_total_temperature
@@ -134,7 +135,7 @@ def centrifugal_calcs(
     # %% [F]:Setup Inlet Loop
     inlet_loop_max_iterations = 1000
     inlet_loop_tolerance = 1e-3
-    inlet = inlet_loop(
+    inlet = InletLoop(
         inputs,
         working_fluid,
         density.total,
@@ -146,6 +147,9 @@ def centrifugal_calcs(
 
     # %% [F.1]:Inlet Geometry
     compressor.geometry.CalculateInletBladeHeightAndRatios()
+    inlet.blade.CalculateComponentsViaFreeVortexMethod(
+        compressor.geometry, rotational_speed
+    )
 
     # %% [F.2]:Inlet Velocity Triangles
     # % As a recap, our knowns are U2, V2.tan, and V1.mag. With these known
