@@ -8,5 +8,6 @@ py_library(
         "//ccpd/data_types:inputs",
         "//ccpd/data_types:working_fluid",
         "//ccpd/utilities/inlet:inlet_loop_calcs",
+        "//ccpd/utilities/inlet:inlet_utils",
     ],
 )

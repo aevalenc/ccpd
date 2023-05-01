@@ -54,12 +54,20 @@ class VelocityTriangle:
     relative: VelocityVector = VelocityVector()
     translational: VelocityVector = VelocityVector()
 
+@dataclass
+class MachTriangle:
+    absolute: float = 0.0
+    relative: float = 0.0
+    translational: float = 0.0
 
 @dataclass
 class ThreeDimensionalBlade:
     hub: VelocityTriangle = VelocityTriangle()
     mid: VelocityTriangle = VelocityTriangle()
     tip: VelocityTriangle = VelocityTriangle()
+    hub_mach_number: MachTriangle = MachTriangle()
+    mid_mach_number: MachTriangle = MachTriangle()
+    tip_mach_number: MachTriangle = MachTriangle()
 
     def CalculateComponentsViaFreeVortexMethod(
         self, compressor_geometry: CompressorGeometry, rotational_speed: float

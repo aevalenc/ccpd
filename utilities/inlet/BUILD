@@ -18,7 +18,11 @@ py_library(
     name = "inlet_utils",
     srcs = ["inlet_utils.py"],
     visibility = ["//ccpd:__subpackages__"],
-    deps = ["@python_deps_colorama//:pkg"],
+    deps = [
+        "//ccpd/data_types:centrifugal_compressor",
+        "//ccpd/data_types:working_fluid",
+        "@python_deps_colorama//:pkg",
+    ],
 )
 
 py_library(

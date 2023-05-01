@@ -12,17 +12,17 @@ class CompressorGeometry:
     """
 
     # TODO: Consider using slots to preallocate class members
-    number_of_blades = 0
+    number_of_blades: int = 0
 
-    inlet_hub_diameter = 0.0
-    inlet_mid_diameter = 0.0
-    inlet_tip_diameter = 0.0
-    inlet_blade_height = 0.0
-    inlet_blade_ratio = 0.0
+    inlet_hub_diameter: float = 0.0
+    inlet_mid_diameter: float = 0.0
+    inlet_tip_diameter: float = 0.0
+    inlet_blade_height: float = 0.0
+    inlet_blade_ratio: float = 0.0
 
-    outer_diameter = 0.0
-    outlet_blade_height = 0.0
-    outer_blade_height_ratio = 0.0
+    outer_diameter: float = 0.0
+    outlet_blade_height: float = 0.0
+    outer_blade_height_ratio: float = 0.0
 
     def CalculateInletBladeHeightAndRatios(self):
         assert not np.isclose(

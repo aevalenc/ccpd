@@ -10,6 +10,7 @@ from ccpd.data_types.thermo_point import ThermodynamicVariable
 from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.data_types.inputs import Inputs
 from ccpd.utilities.inlet.inlet_loop_calcs import InletLoop
+from ccpd.utilities.inlet.inlet_utils import CalculateRemainingInletQuantities
 import json
 import sys
 import numpy as np
@@ -96,27 +97,28 @@ def centrifugal_calcs(
     # compressor.inlet.thermodynamic_point.
 
     # [C]:Calculate Velocities and Eulerian Work
-    compressor.outlet.blade.mid.tangential = (
+    compressor.outlet.blade.mid.absolute.tangential = (
         rotational_speed * compressor.geometry.outer_diameter / 2.0
     )
     eulerian_work = isentropic_work / end_to_end_efficiency
-    compressor.outlet.blade.mid.axial = (
-        eulerian_work / compressor.outlet.blade.mid.tangential
+    compressor.outlet.blade.mid.absolute.axial = (
+        eulerian_work / compressor.outlet.blade.mid.absolute.tangential
     )
 
     # [D]:Calculate Flow Perfomance Indicators
     compressor.stage_loading = isentropic_work / np.square(
-        compressor.outlet.blade.mid.tangential
+        compressor.outlet.blade.mid.absolute.tangential
     )
     compressor.flow_coefficient = inputs.mass_flow_rate / (
         density.total
         * (
-            compressor.outlet.blade.mid.tangential
+            compressor.outlet.blade.mid.absolute.tangential
             * (compressor.geometry.outer_diameter / 2.0)
         )
     )
     compressor.blade_orientation_ratio = (
-        compressor.outlet.blade.mid.axial / compressor.outlet.blade.mid.tangential
+        compressor.outlet.blade.mid.absolute.axial
+        / compressor.outlet.blade.mid.absolute.tangential
     )
 
     # %% [E]:Hub Diameter
@@ -150,13 +152,8 @@ def centrifugal_calcs(
     inlet.blade.CalculateComponentsViaFreeVortexMethod(
         compressor.geometry, rotational_speed
     )
-
-    # %% [F.2]:Inlet Velocity Triangles
-    # % As a recap, our knowns are U2, V2.tan, and V1.mag. With these known
-    # %   quantites and the diameters for our machine, we can solve for the
-    # %   remaining velocity components.
-    # inlet = inlet_calcs(inlet, D1, w);
-    # inlet.rho01 = rho01;                % [kg/m^3] Inlet total density
+    CalculateRemainingInletQuantities(inlet, working_fluid)
+    inlet.thermodynamic_point.density.total = density.total
 
     # %% [G]:Outlet
     # % This for the moment is a little vague. Since we do not know our

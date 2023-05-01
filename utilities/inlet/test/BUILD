@@ -15,3 +15,14 @@ py_test(
         "//ccpd/utilities/inlet:inlet_loop_calcs",
     ],
 )
+
+py_test(
+    name = "inlet_utils_tests",
+    srcs = ["inlet_utils_tests.py"],
+    deps = [
+        "//ccpd/data_types:centrifugal_compressor",
+        "//ccpd/data_types:centrifugal_compressor_geometry",
+        "//ccpd/data_types:thermo_point",
+        "//ccpd/utilities/inlet:inlet_utils",
+    ],
+)
