@@ -2,15 +2,19 @@
   Author: Alejandro Valencia
   Centrifugal Compressor Preliminary Design
   Inlet Iteration Loop
-  Update: 24 January, 2023
+  Update: 1 May, 2023
 """
 
-from ccpd.data_types.centrifugal_compressor import CompressorStage
-from ccpd.data_types.velocity_triangle import VelocityTriangle, ThreeDimensionalBlade
+from ccpd.data_types.centrifugal_compressor import CompressorGeometry, CompressorStage
+from ccpd.data_types.three_dimensional_blade import (
+    ThreeDimensionalBlade,
+    VelocityVector,
+    VelocityTriangle,
+)
 from ccpd.data_types.thermo_point import ThermodynamicVariable, ThermoPoint
 from ccpd.data_types.inputs import Inputs
 from ccpd.data_types.working_fluid import WorkingFluid
-from ccpd.utilities.tip_diameter import ComputeTipDiameter
+from ccpd.utilities.inlet.tip_diameter import ComputeTipDiameter
 from numpy import pi, sqrt
 from colorama import Fore
 
@@ -87,32 +91,42 @@ class InletLoopCollector:
     def __init__(self) -> None:
         self.name = __name__
 
-    def Print(self):
-        print(f"{Fore.YELLOW}INFO: {__name__}{Fore.RESET}")
-        [
-            print(f"\t{key}: {value}")
-            for key, value in self.__dict__.items()
-            if key != "name"
-        ]
+    def Print(self) -> None:
+        for key, value in self.__dict__.items():
+            if key == "name":
+                print(f"{Fore.YELLOW}INFO: {__name__}{Fore.RESET}")
+            elif type(key) == str:
+                print(f"\t{key}: {value}")
+            else:
+                print(f"\t{key}: {value: 4.1f}")
 
 
-def IsInletLoopConverged(density_residual, tolerance, iteration, max_iterations):
+def IsInletLoopConverged(
+    density_residual, tolerance, iteration, debug_collector: InletLoopCollector
+):
     if density_residual < tolerance:
-        print(
-            f"Minimization problem converged in {iteration} iterations w/ residual: {density_residual}\n"
+        setattr(
+            debug_collector,
+            "converge_message",
+            f"Minimization problem converged in {iteration} iterations w/ residual: {density_residual:8.6}\n",
         )
         return True
+
     elif density_residual > 1e6:
-        print(f"{Fore.YELLOW}WARNING: solution diverging")
+        setattr(
+            debug_collector,
+            "converge_message",
+            f"{Fore.YELLOW}WARNING: solution diverging",
+        )
         return False
 
 
-def inlet_loop(
+def InletLoop(
     inputs: Inputs,
     fluid: WorkingFluid,
     static_density_guess: float,
     rotational_speed: float,
-    outer_diameter: float,
+    compressor_geometry: CompressorGeometry,
     max_iterations: int,
     tolerance: float,
 ) -> CompressorStage:
@@ -123,7 +137,8 @@ def inlet_loop(
     T = ThermodynamicVariable()
     P = ThermodynamicVariable()
     rho = ThermodynamicVariable()
-    V = VelocityTriangle()
+    V = VelocityVector()
+    inlet_flow_area = 0.0
 
     T.total = inputs.inlet_total_temperature
     P.total = inputs.inlet_total_pressure
@@ -138,10 +153,14 @@ def inlet_loop(
             static_density_guess,
             inputs.hub_diameter,
             0.2,
-            bounds=[0.4 * outer_diameter, 0.6 * outer_diameter],
+            bounds=[
+                0.4 * compressor_geometry.outer_diameter,
+                0.6 * compressor_geometry.outer_diameter,
+            ],
         )
 
-        inlet_loop_collector.tip_diameter = tip_diameter
+        compressor_geometry.inlet_tip_diameter = tip_diameter
+        setattr(inlet_loop_collector, "tip_diameter", tip_diameter)
 
         inlet_flow_area = (
             pi / 4.0 * (tip_diameter**2 - inputs.hub_diameter**2)
@@ -154,7 +173,7 @@ def inlet_loop(
         V.CalculateComponentsWithMagnitudeAndAngle()
 
         T.static = T.total - V.magnitude**2 / (2 * fluid.specific_heat)  # [K]
-        inlet_loop_collector.static_temperature = T.static
+        setattr(inlet_loop_collector, "static temperature", T.static)
 
         mach_number = V.magnitude / sqrt(
             fluid.specific_ratio * fluid.specific_gas_constant * T.static
@@ -165,37 +184,39 @@ def inlet_loop(
         ) ** (
             fluid.specific_ratio / (fluid.specific_ratio - 1)
         )  # [Pa]
-
-        inlet_loop_collector.static_pressure = P.static
+        setattr(inlet_loop_collector, "static pressure", P.static)
 
         rho.static = P.static / (fluid.specific_gas_constant * T.static)  # [kg/m^3]
 
         density_residual = abs(rho.static - static_density_guess) / static_density_guess
-        inlet_loop_collector.density_residual = density_residual
+        setattr(inlet_loop_collector, "density residual", density_residual)
 
-        if IsInletLoopConverged(density_residual, tolerance, iteration, max_iterations):
+        if IsInletLoopConverged(
+            density_residual, tolerance, iteration, inlet_loop_collector
+        ):
             break
 
         if iteration == max_iterations:
-            print(f"{Fore.YELLOW}WARNING: Max iterations reached")
+            setattr(
+                inlet_loop_collector,
+                "converge_message",
+                f"{Fore.YELLOW}WARNING: Max iterations reached",
+            )
 
         # Reset Density
         static_density_guess = rho.static
-        inlet_loop_collector.Print()
 
     rho.static = P.static / (fluid.specific_gas_constant * T.static)
 
     # [I]:Output
-    # result.tip_diameter = Dtip  # [m]   Tip diameter
-    # result.T1 = T1  # [K]   Static Temperature
     # result.mach_number = M1  # []    Absolute Mach number
-    # result.P1 = P1  # [Pa]  Static Pressure
-    # # result.V.mid = V1  # [m/s] Absolute velocity
     # result.inlet_flow_area = S1  # [m^2] Inlet flow area
-    # result.rho1 = rho1
 
-    blade = ThreeDimensionalBlade(mid=V)
+    inlet_loop_collector.Print()
+    blade = ThreeDimensionalBlade(mid=VelocityTriangle(absolute=V))
     inlet_thermo_point = ThermoPoint(pressure=P, density=rho, temperature=T)
-    inlet = CompressorStage(thermodynamic_point=inlet_thermo_point, blade=blade)
+    inlet = CompressorStage(
+        thermodynamic_point=inlet_thermo_point, blade=blade, flow_area=inlet_flow_area
+    )
 
     return inlet

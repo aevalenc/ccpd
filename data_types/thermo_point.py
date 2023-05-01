@@ -2,45 +2,39 @@
     Thermo point class data type
 """
 
+from dataclasses import dataclass
 
+
+@dataclass
 class ThermodynamicVariable:
     """
     Thermodynamic variable class data type
     """
 
-    def __init__(self):
-        self.static = 0.0
-        self.dynamic = 0.0
-        self.total = 0.0
+    static: float = 0.0
+    dynamic: float = 0.0
+    total: float = 0.0
 
 
+@dataclass
 class ThermoPoint:
     """
     Thermo point class data type
     """
 
-    # self.__pressure = ThermodynamicVariable()
-    # self.__temperature = ThermodynamicVariable()
-    # self.__density = ThermodynamicVariable()
-
-    def __init__(
-        self,
-        pressure=ThermodynamicVariable(),
-        density=ThermodynamicVariable(),
-        temperature=ThermodynamicVariable(),
-    ) -> None:
-        self.__pressure = pressure
-        self.__density = density
-        self.__temperature = temperature
+    pressure: ThermodynamicVariable = ThermodynamicVariable()
+    density: ThermodynamicVariable = ThermodynamicVariable()
+    temperature: ThermodynamicVariable = ThermodynamicVariable()
+    speed_of_sound: float = 0.0
 
     @property
-    def GetPressure(self):
-        return self.__pressure
+    def GetTemperature(self) -> ThermodynamicVariable:
+        return self.temperature
 
     @property
-    def GetDensity(self):
-        return self.__density
+    def GetPressure(self) -> ThermodynamicVariable:
+        return self.pressure
 
     @property
-    def GetTemperature(self):
-        return self.__temperature
+    def GetDensity(self) -> ThermodynamicVariable:
+        return self.density

@@ -29,14 +29,25 @@ py_library(
     srcs = ["centrifugal_compressor.py"],
     visibility = ["//ccpd:__subpackages__"],
     deps = [
+        ":centrifugal_compressor_geometry",
         ":thermo_point",
-        ":velocity_triangle",
+        ":three_dimensional_blade",
     ],
 )
 
 py_library(
-    name = "velocity_triangle",
-    srcs = ["velocity_triangle.py"],
+    name = "three_dimensional_blade",
+    srcs = ["three_dimensional_blade.py"],
+    visibility = ["//ccpd:__subpackages__"],
+    deps = [
+        ":centrifugal_compressor_geometry",
+        "@python_deps_numpy//:pkg",
+    ],
+)
+
+py_library(
+    name = "centrifugal_compressor_geometry",
+    srcs = ["centrifugal_compressor_geometry.py"],
     visibility = ["//ccpd:__subpackages__"],
     deps = ["@python_deps_numpy//:pkg"],
 )

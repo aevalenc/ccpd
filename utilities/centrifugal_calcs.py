@@ -2,14 +2,15 @@
 Author: Alejandro Valencia
 Centrifugal Compressor Preliminary Design
 Initial Calculations
-Update: 24 July, 2020
+Update: 30 April, 2023
 """
 
 from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
 from ccpd.data_types.thermo_point import ThermodynamicVariable
 from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.data_types.inputs import Inputs
-from ccpd.utilities.inlet_loop_calcs import inlet_loop
+from ccpd.utilities.inlet.inlet_loop_calcs import InletLoop
+from ccpd.utilities.inlet.inlet_utils import CalculateRemainingInletQuantities
 import json
 import sys
 import numpy as np
@@ -37,7 +38,7 @@ def centrifugal_calcs(
               mat: Compressor material
 
     The following are outputs: In this case the output is collected in one
-    single MATLAB data structure result. This structure contains five main
+    single data structure result. This structure contains five main
     sub data structures: inlet, outlet, comp, vldiff, and diff
 
               inlet: structure containing thermodynamic and velocity
@@ -62,13 +63,13 @@ def centrifugal_calcs(
     fluid_database = json.load(fluid_database_file)
     working_fluid = WorkingFluid(fluid_database[fluid])
 
+    # [B]:Initial Calculations
     isentropic_exponent = (
         working_fluid.specific_ratio - 1.0
     ) / working_fluid.specific_ratio
 
     inverse_isentropic_exponent = 1.0 / isentropic_exponent
 
-    # [B]:Initial Calculations
     isentropic_work = (
         working_fluid.specific_heat
         * inputs.inlet_total_temperature
@@ -76,6 +77,7 @@ def centrifugal_calcs(
     )
 
     # @todo Create a method within the centrifugal compressor class to initialize the inlet with these initial values
+    compressor.geometry.inlet_hub_diameter = inputs.hub_diameter
     density = ThermodynamicVariable()
     density.total = inputs.inlet_total_pressure / (
         working_fluid.specific_gas_constant * inputs.inlet_total_temperature
@@ -95,27 +97,28 @@ def centrifugal_calcs(
     # compressor.inlet.thermodynamic_point.
 
     # [C]:Calculate Velocities and Eulerian Work
-    compressor.outlet.blade.mid.tangential = (
+    compressor.outlet.blade.mid.absolute.tangential = (
         rotational_speed * compressor.geometry.outer_diameter / 2.0
     )
     eulerian_work = isentropic_work / end_to_end_efficiency
-    compressor.outlet.blade.mid.axial = (
-        eulerian_work / compressor.outlet.blade.mid.tangential
+    compressor.outlet.blade.mid.absolute.axial = (
+        eulerian_work / compressor.outlet.blade.mid.absolute.tangential
     )
 
     # [D]:Calculate Flow Perfomance Indicators
     compressor.stage_loading = isentropic_work / np.square(
-        compressor.outlet.blade.mid.tangential
+        compressor.outlet.blade.mid.absolute.tangential
     )
     compressor.flow_coefficient = inputs.mass_flow_rate / (
         density.total
         * (
-            compressor.outlet.blade.mid.tangential
+            compressor.outlet.blade.mid.absolute.tangential
             * (compressor.geometry.outer_diameter / 2.0)
         )
     )
     compressor.blade_orientation_ratio = (
-        compressor.outlet.blade.mid.axial / compressor.outlet.blade.mid.tangential
+        compressor.outlet.blade.mid.absolute.axial
+        / compressor.outlet.blade.mid.absolute.tangential
     )
 
     # %% [E]:Hub Diameter
@@ -134,29 +137,23 @@ def centrifugal_calcs(
     # %% [F]:Setup Inlet Loop
     inlet_loop_max_iterations = 1000
     inlet_loop_tolerance = 1e-3
-    inlet = inlet_loop(
+    inlet = InletLoop(
         inputs,
         working_fluid,
         density.total,
         rotational_speed,
-        compressor.geometry.outer_diameter,
+        compressor.geometry,
         inlet_loop_max_iterations,
         inlet_loop_tolerance,
     )
 
     # %% [F.1]:Inlet Geometry
-    # D1.tip = inlet.Dtip;              	% [m] Tip diameter
-    # b1     = (D1.tip - D1.hub) / 2;   	% [m] blade height
-    # D1.mid = (D1.tip + D1.hub) / 2;   	% [m] Mean diameter
-    # rtd2   = D1.tip / D2;             	% []  Inlet tip dia. to outlet dia. ratio
-    # rht    = D1.hub / D1.tip;         	% []  Inlet hub dia. to inlet tip dia. ratio
-
-    # %% [F.2]:Inlet Velocity Triangles
-    # % As a recap, our knowns are U2, V2.tan, and V1.mag. With these known
-    # %   quantites and the diameters for our machine, we can solve for the
-    # %   remaining velocity components.
-    # inlet = inlet_calcs(inlet, D1, w);
-    # inlet.rho01 = rho01;                % [kg/m^3] Inlet total density
+    compressor.geometry.CalculateInletBladeHeightAndRatios()
+    inlet.blade.CalculateComponentsViaFreeVortexMethod(
+        compressor.geometry, rotational_speed
+    )
+    CalculateRemainingInletQuantities(inlet, working_fluid)
+    inlet.thermodynamic_point.density.total = density.total
 
     # %% [G]:Outlet
     # % This for the moment is a little vague. Since we do not know our
