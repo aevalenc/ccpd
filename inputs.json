@@ -5,5 +5,6 @@
   "compression_ratio": 1.25,
   "surface_roughness": 0.0025,
   "tip_clearance": 0.001,
-  "hub_diameter": 0.2
+  "hub_diameter": 0.2,
+  "outlet_angle_guess": 65
 }
