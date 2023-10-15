@@ -51,3 +51,13 @@ py_library(
     visibility = ["//ccpd:__subpackages__"],
     deps = ["@python_deps_numpy//:pkg"],
 )
+
+py_library(
+    name = "test_utils",
+    srcs = ["test_utils.py"],
+    visibility = ["//ccpd:__subpackages__"],
+    deps = [
+        ":inputs",
+        ":working_fluid",
+    ],
+)
