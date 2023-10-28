@@ -12,8 +12,8 @@ import numpy as np
 class TestCalculateMagnitudeWithComponents(unittest.TestCase, tdb.VelocityVector):
     def test_given_valid_components_expect_valid_magnitude(self):
         # Given
-        self._axial = 3.0
-        self._tangential = 4.0
+        self.axial = 3.0
+        self.tangential = 4.0
 
         # Call
         self.CalculateMagnitudeWithComponents()
@@ -23,8 +23,8 @@ class TestCalculateMagnitudeWithComponents(unittest.TestCase, tdb.VelocityVector
 
     def test_no_two_given_valid_components_expect_valid_magnitude(self):
         # Given
-        self._axial = -4.0
-        self._tangential = 3.0
+        self.axial = -4.0
+        self.tangential = 3.0
 
         # Call
         self.CalculateMagnitudeWithComponents()
@@ -36,8 +36,8 @@ class TestCalculateMagnitudeWithComponents(unittest.TestCase, tdb.VelocityVector
 class TestCalculateComponentsWithMagnitudeAndAngle(unittest.TestCase, tdb.VelocityVector):
     def test_given_valid_magnitude_and_angle_expect_valid_components(self):
         # Given
-        self._magnitude = 10.0
-        self._angle = 60 * np.pi / 180.0
+        self.magnitude = 10.0
+        self.angle = 60 * np.pi / 180.0
 
         # Call
         self.CalculateComponentsWithMagnitudeAndAngle()

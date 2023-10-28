@@ -17,7 +17,6 @@ class VelocityVector:
     reference coordinate frame
     """
 
-    # def __init__(self, axial=0.0, tangential=0.0, magnitude=0.0, angle=0.0) -> None:
     _axial: float = 0.0
     _tangential: float = 0.0
     _magnitude: float = 0.0
@@ -39,16 +38,32 @@ class VelocityVector:
     def angle(self) -> float:
         return self._angle
 
+    @axial.setter
+    def axial(self, value) -> None:
+        self._axial = value
+
+    @tangential.setter
+    def tangential(self, value) -> None:
+        self._tangential = value
+
+    @magnitude.setter
+    def magnitude(self, value) -> None:
+        self._magnitude = value
+
+    @angle.setter
+    def angle(self, value) -> None:
+        self._angle = value
+
     def __add__(self, other):
         return VelocityVector(self.axial + other.axial, self.tangential + other.tangential)
 
     def CalculateMagnitudeWithComponents(self) -> None:
-        self._magnitude = np.sqrt(np.square(self.axial) + np.square(self.tangential))
-        self._angle = np.arctan2(self.tangential, self.axial)
+        self.magnitude = np.sqrt(np.square(self.axial) + np.square(self.tangential))
+        self.angle = np.arctan2(self.tangential, self.axial)
 
     def CalculateComponentsWithMagnitudeAndAngle(self) -> None:
-        self._axial = self.magnitude * np.cos(self.angle)
-        self._tangential = self.magnitude * np.sin(self.angle)
+        self.axial = self.magnitude * np.cos(self.angle)
+        self.tangential = self.magnitude * np.sin(self.angle)
 
     # def __repr__(self):
     #     return (
@@ -81,6 +96,18 @@ class VelocityTriangle:
     def translational(self) -> VelocityVector:
         return self._translational
 
+    @absolute.setter
+    def absolute(self, value) -> None:
+        self._absolute = value
+
+    @relative.setter
+    def relative(self, value) -> None:
+        self._relative = value
+
+    @translational.setter
+    def translational(self, value) -> None:
+        self._translational = value
+
     # def __repr__(self):
     #     return (
     #         f"\nAbsolute: {self.absolute}\n"
@@ -94,6 +121,30 @@ class MachTriangle:
     _absolute: float = 0.0
     _relative: float = 0.0
     _translational: float = 0.0
+
+    @property
+    def absolute(self) -> float:
+        return self._absolute
+
+    @property
+    def relative(self) -> float:
+        return self._relative
+
+    @property
+    def translational(self) -> float:
+        return self._translational
+
+    @absolute.setter
+    def absolute(self, value) -> None:
+        self._absolute = value
+
+    @relative.setter
+    def relative(self, value) -> None:
+        self._relative = value
+
+    @translational.setter
+    def translational(self, value) -> None:
+        self._translational = value
 
     # def __repr__(self):
     #     return (
