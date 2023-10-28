@@ -8,6 +8,7 @@ py_library(
         ":tip_diameter",
         "//ccpd/data_types:centrifugal_compressor",
         "//ccpd/data_types:inputs",
+        "//ccpd/data_types:test_utils",
         "//ccpd/data_types:thermo_point",
         "//ccpd/data_types:working_fluid",
         "@python_deps_colorama//:pkg",

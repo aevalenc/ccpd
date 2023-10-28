@@ -1,6 +1,6 @@
 """
 Author: Alejandro Valencia
-Update: 30 April, 2023
+Update: October 28, 2023
 """
 
 import unittest
@@ -33,9 +33,7 @@ class TestCalculateMagnitudeWithComponents(unittest.TestCase, tdb.VelocityVector
         self.assertEqual(self.magnitude, 5.0)
 
 
-class TestCalculateComponentsWithMagnitudeAndAngle(
-    unittest.TestCase, tdb.VelocityVector
-):
+class TestCalculateComponentsWithMagnitudeAndAngle(unittest.TestCase, tdb.VelocityVector):
     def test_given_valid_magnitude_and_angle_expect_valid_components(self):
         # Given
         self.magnitude = 10.0
@@ -75,13 +73,11 @@ class TestCalculateComponentsViaFreeVortexMethod(unittest.TestCase):
         basic_compressor_geometry = self.CreateBasicCompressorGeometry()
         rotational_speed = 29.0
 
-        absolute_velocity = tdb.VelocityVector(magnitude=5.0, angle=0.0)
+        absolute_velocity = tdb.VelocityVector(_magnitude=5.0, _angle=0.0)
         absolute_velocity.CalculateComponentsWithMagnitudeAndAngle()
         self.blade.__setattr__(
-            "mid",
-            self.CreateBasicVelocityTriangleAtGivenPosition(
-                "absolute", absolute_velocity
-            ),
+            "_mid",
+            self.CreateBasicVelocityTriangleAtGivenPosition("_absolute", absolute_velocity),
         )
 
         # Call
