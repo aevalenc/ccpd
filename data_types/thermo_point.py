@@ -2,7 +2,7 @@
     Thermo point class data type
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -15,6 +15,9 @@ class ThermodynamicVariable:
     dynamic: float = 0.0
     total: float = 0.0
 
+    def __repr__(self) -> str:
+        return f"\n\tstatic: {self.static}\n\tdynamic: {self.dynamic}\n\ttotal: {self.total}"
+
 
 @dataclass
 class ThermoPoint:
@@ -22,9 +25,9 @@ class ThermoPoint:
     Thermo point class data type
     """
 
-    pressure: ThermodynamicVariable = ThermodynamicVariable()
-    density: ThermodynamicVariable = ThermodynamicVariable()
-    temperature: ThermodynamicVariable = ThermodynamicVariable()
+    pressure: ThermodynamicVariable = field(default_factory=lambda: ThermodynamicVariable())
+    density: ThermodynamicVariable = field(default_factory=lambda: ThermodynamicVariable())
+    temperature: ThermodynamicVariable = field(default_factory=lambda: ThermodynamicVariable())
     speed_of_sound: float = 0.0
 
     @property
