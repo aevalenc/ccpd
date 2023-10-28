@@ -15,7 +15,7 @@ from ccpd.data_types.thermo_point import ThermodynamicVariable, ThermoPoint
 from ccpd.data_types.inputs import Inputs
 from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.utilities.inlet.tip_diameter import ComputeTipDiameter
-from numpy import pi, sqrt
+from numpy import pi, sqrt, float64
 from colorama import Fore
 
 # This function takes initial design parameters and calculates the inlet
@@ -130,7 +130,6 @@ def InletLoop(
     max_iterations: int,
     tolerance: float,
 ) -> CompressorStage:
-
     inlet_loop_collector = InletLoopCollector()
 
     # Quantities
@@ -145,30 +144,25 @@ def InletLoop(
 
     # []:Optimization Loop
     for iteration in range(0, max_iterations):
-
         # Minimize Inlet Tip Diameter
         tip_diameter = ComputeTipDiameter(
-            rotational_speed,
+            float64(rotational_speed),
             inputs.mass_flow_rate,
-            static_density_guess,
+            float64(static_density_guess),
             inputs.hub_diameter,
-            0.2,
+            float64(0.2),
             bounds=[
                 0.4 * compressor_geometry.outer_diameter,
                 0.6 * compressor_geometry.outer_diameter,
             ],
         )
 
-        compressor_geometry.inlet_tip_diameter = tip_diameter
+        compressor_geometry.inlet_tip_diameter = float(tip_diameter)
         setattr(inlet_loop_collector, "tip_diameter", tip_diameter)
 
-        inlet_flow_area = (
-            pi / 4.0 * (tip_diameter**2 - inputs.hub_diameter**2)
-        )  # [m^2]
+        inlet_flow_area = pi / 4.0 * (tip_diameter**2 - inputs.hub_diameter**2)  # [m^2]
 
-        V.magnitude = inputs.mass_flow_rate / (
-            static_density_guess * inlet_flow_area
-        )  # [m/s]
+        V.magnitude = inputs.mass_flow_rate / (static_density_guess * inlet_flow_area)  # [m/s]
         V.angle = 0.0
         V.CalculateComponentsWithMagnitudeAndAngle()
 
@@ -179,9 +173,7 @@ def InletLoop(
             fluid.specific_ratio * fluid.specific_gas_constant * T.static
         )  # []
 
-        P.static = P.total / (
-            1 + (fluid.specific_ratio - 1) / 2 * mach_number**2
-        ) ** (
+        P.static = P.total / (1 + (fluid.specific_ratio - 1) / 2 * mach_number**2) ** (
             fluid.specific_ratio / (fluid.specific_ratio - 1)
         )  # [Pa]
         setattr(inlet_loop_collector, "static pressure", P.static)
@@ -191,9 +183,7 @@ def InletLoop(
         density_residual = abs(rho.static - static_density_guess) / static_density_guess
         setattr(inlet_loop_collector, "density residual", density_residual)
 
-        if IsInletLoopConverged(
-            density_residual, tolerance, iteration, inlet_loop_collector
-        ):
+        if IsInletLoopConverged(density_residual, tolerance, iteration, inlet_loop_collector):
             break
 
         if iteration == max_iterations:
@@ -213,7 +203,7 @@ def InletLoop(
     # result.inlet_flow_area = S1  # [m^2] Inlet flow area
 
     inlet_loop_collector.Print()
-    blade = ThreeDimensionalBlade(mid=VelocityTriangle(absolute=V))
+    blade = ThreeDimensionalBlade(_mid=VelocityTriangle(_absolute=V))
     inlet_thermo_point = ThermoPoint(pressure=P, density=rho, temperature=T)
     inlet = CompressorStage(
         thermodynamic_point=inlet_thermo_point, blade=blade, flow_area=inlet_flow_area

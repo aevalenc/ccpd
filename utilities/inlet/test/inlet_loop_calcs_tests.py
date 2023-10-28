@@ -8,33 +8,34 @@ import unittest
 from ccpd.data_types.thermo_point import ThermodynamicVariable
 from ccpd.data_types.centrifugal_compressor_geometry import CompressorGeometry
 from ccpd.utilities.inlet.inlet_loop_calcs import InletLoop
+from ccpd.data_types.test_utils import MockInputs, MockWorkingFluid
 
 
-@dataclass
-class MockInputs:
-    """
-    Class to mock inputs class for testing purposes
-    """
+# @dataclass
+# class MockInputs:
+#     """
+#     Class to mock inputs class for testing purposes
+#     """
 
-    mass_flow_rate: float = 5.0
-    inlet_total_pressure: float = 100000.0
-    inlet_total_temperature: float = 298.0
-    compression_ratio: float = 1.25
-    surface_roughness: float = 0.003
-    tip_clearance: float = 0.0001
-    hub_diameter: float = 0.2
+#     mass_flow_rate: float = 5.0
+#     inlet_total_pressure: float = 100000.0
+#     inlet_total_temperature: float = 298.0
+#     compression_ratio: float = 1.25
+#     surface_roughness: float = 0.003
+#     tip_clearance: float = 0.0001
+#     hub_diameter: float = 0.2
 
 
-@dataclass
-class MockWorkingFluid:
-    """
-    Class to mock WorkingFluid class for testing purposes
-    """
+# @dataclass
+# class MockWorkingFluid:
+#     """
+#     Class to mock WorkingFluid class for testing purposes
+#     """
 
-    specific_heat: float = 1006.0
-    specific_ratio: float = 1.4
-    specific_gas_constant: float = 287.0
-    kinematic_viscosity: float = 18.13e-6
+#     specific_heat: float = 1006.0
+#     specific_ratio: float = 1.4
+#     specific_gas_constant: float = 287.0
+#     kinematic_viscosity: float = 18.13e-6
 
 
 def CreateBasicCompressorGeometry() -> CompressorGeometry:
@@ -46,7 +47,6 @@ def CreateBasicCompressorGeometry() -> CompressorGeometry:
 
 
 class TestInletLoopCalculations(unittest.TestCase):
-
     tolerance = 0.001
 
     def test_given_valid_inputs_expect_valid_results(self):
@@ -72,9 +72,7 @@ class TestInletLoopCalculations(unittest.TestCase):
         )
 
         # Expect
-        self.assertAlmostEqual(
-            result.blade.mid.absolute.magnitude, 28.695, delta=self.tolerance
-        )
+        self.assertAlmostEqual(result.blade.mid.absolute.magnitude, 28.695, delta=self.tolerance)
 
 
 if __name__ == "__main__":

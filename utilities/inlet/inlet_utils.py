@@ -2,7 +2,7 @@
 Author: Alejandro Valencia
 Centrifugal Compressor Preliminary Design
 Remaining Inlet Calculations
-Update: 1 May, 2023
+Update: October 28, 2023
 """
 
 from ccpd.data_types.centrifugal_compressor import CompressorGeometry, CompressorStage
@@ -25,17 +25,13 @@ def SanityChecks(
     working_fluid_specific_heat: float,
     inlet_total_temperature: float,
 ):
-    assert not np.isclose(
-        working_fluid_specific_ratio, 0.0
-    ), f"[Error]: Specific ratio not set!"
+    assert not np.isclose(working_fluid_specific_ratio, 0.0), f"[Error]: Specific ratio not set!"
 
     assert not np.isclose(
         working_fluid_specific_gas_constant, 0.0
     ), f"[Error]: Specific gas constant not set!"
 
-    assert not np.isclose(
-        working_fluid_specific_heat, 0.0
-    ), f"[Error]: Specific heat not set!"
+    assert not np.isclose(working_fluid_specific_heat, 0.0), f"[Error]: Specific heat not set!"
 
     assert not np.isclose(
         inlet_total_temperature, 0.0
@@ -46,7 +42,6 @@ def CalculateRemainingInletQuantities(
     inlet: CompressorStage,
     working_fluid: WorkingFluid,
 ) -> None:
-
     """
     We have calculated V1 @ the tip. Then assuming a free vortex
       method, the hub and tip velocity triangles can be
@@ -69,9 +64,7 @@ def CalculateRemainingInletQuantities(
     inlet.thermodynamic_point.speed_of_sound = speed_of_sound_at_inlet
 
     # []:Mach Numbers
-    mid_absolute_mach_number = (
-        inlet.blade.mid.absolute.magnitude / speed_of_sound_at_inlet
-    )
+    mid_absolute_mach_number = inlet.blade.mid.absolute.magnitude / speed_of_sound_at_inlet
     inlet.blade.mid_mach_number.absolute = mid_absolute_mach_number
 
     # Relative Mach Number
