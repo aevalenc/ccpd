@@ -166,7 +166,7 @@ def centrifugal_calcs(
     # outlet.D2 = D2;
 
     # %% [G.1]:Loop and Iterate
-    max_outlet_loop_iterations = 2
+    max_outlet_loop_iterations = 10
     outlet_loop_tolerance = 1e-3
     optimize_mass_flow(
         inlet,

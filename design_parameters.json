@@ -1,7 +1,7 @@
 {
-  "specific_diameter": 3.85,
+  "specific_diameter": 3.8,
   "specific_rotational_speed": 0.6,
   "end_to_end_efficiency": 0.85,
-  "fluid": "air",
+  "fluid": "hydrogen",
   "material": "aluminum"
 }

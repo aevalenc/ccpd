@@ -22,10 +22,10 @@ class OutletLoopCollector:
         for key, value in self.__dict__.items():
             if key == "name":
                 print(f"{Fore.YELLOW}INFO: {__name__}{Fore.RESET}")
-            elif type(key) == str:
-                print(f"\t{key}: {value}")
+            elif type(value) == float:
+                print(f"\t{key}: {value: 0.6f}")
             else:
-                print(f"\t{key}: {value: 4.1f}")
+                print(f"\t{key}: {value}")
 
 
 def calculate_geometric_inlet_angle(
@@ -70,7 +70,7 @@ def CalculateDiffusionLosses(
     outlet_relative_velocity: VelocityVector,
     outlet_translational_velocity: VelocityVector,
     number_of_blades: int,
-    blade_thickness: float,
+    blade_height: float,
 ) -> tuple[float, float]:
     hydraulic_length = (D2.mid / 2 - D1.mid / 2) / np.cos(average_inlet_relative_angle)
     average_relative_inlet_velocity = np.mean(inlet_relative_velocities)
@@ -80,7 +80,7 @@ def CalculateDiffusionLosses(
         + (np.pi * D2.mid * outlet_absolute_velocity.tangential)
         / (2 * number_of_blades * hydraulic_length * average_relative_inlet_velocity)
         + 0.1
-        * (D1.tip / 2 - D1.hub / 2 + blade_thickness)
+        * (D1.tip / 2 - D1.hub / 2 + blade_height)
         / (D2.mid / 2 - D1.tip / 2)
         * (1 + outlet_relative_velocity.magnitude / average_relative_inlet_velocity)
     )
@@ -92,7 +92,7 @@ def CalculateDiffusionLosses(
 
 def CalculateFrictionalLosses(
     outlet_diameter: float,
-    blade_thickness: float,
+    blade_height: float,
     number_of_blades: int,
     pitch: float,
     static_density: float,
@@ -107,8 +107,8 @@ def CalculateFrictionalLosses(
     quantities we define our hydraulic diameter which will be used to
     determine our flow regime via Reynolds number.
     """
-    outlet_flow_area = np.pi * outlet_diameter * blade_thickness
-    outlet_flow_perimeter = number_of_blades * (2 * blade_thickness + 2 * pitch)
+    outlet_flow_area = np.pi * outlet_diameter * blade_height
+    outlet_flow_perimeter = number_of_blades * (2 * blade_height + 2 * pitch)
     hydraulic_diameter = 4 * outlet_flow_area / outlet_flow_perimeter
     reynolds_number = (
         static_density * outlet_relative_velocity.magnitude * hydraulic_diameter / slip_factor
@@ -171,7 +171,7 @@ def optimize_mass_flow(
         iteration += 1
 
         # [A]:Total & Static Temperature
-        temperature.total = inlet.thermodynamic_point.GetTemperature.total + (
+        temperature.total = inlet.thermodynamic_point.temperature.total + (
             eulerian_work * eta_0 / fluid.specific_heat
         )
 
@@ -183,7 +183,6 @@ def optimize_mass_flow(
         )
 
         # [B]:Isentropic Outlet Pressure
-        print(inverse_exponent)
         pressure.static = inlet.thermodynamic_point.pressure.static * (
             temperature.static / inlet.thermodynamic_point.temperature.static
         ) ** (inverse_exponent)
@@ -197,7 +196,7 @@ def optimize_mass_flow(
 
         # [C]:Density & Blade Height
         density.static = pressure.static / (fluid.specific_gas_constant * temperature.static)
-        setattr(outlet_debug_collector, "outlet_pressure", density)
+        setattr(outlet_debug_collector, "outlet_density", density)
 
         compressor_geometry.outlet_blade_height = inputs.mass_flow_rate / (
             density.static * np.pi * compressor_geometry.outer_diameter * V2.axial
@@ -220,7 +219,7 @@ def optimize_mass_flow(
         inverse_solidity = 0.4
         number_of_blades = (
             2
-            * (np.pi * np.cos(np.deg2rad(average_inlet_relative_angle)))
+            * (np.pi * np.cos(average_inlet_relative_angle))
             / (
                 inverse_solidity
                 * np.log(
@@ -231,9 +230,11 @@ def optimize_mass_flow(
         number_of_blades = np.ceil(number_of_blades) + 1
         pitch = np.pi * compressor_geometry.outer_diameter / number_of_blades
         chord = pitch / inverse_solidity
+        setattr(outlet_debug_collector, "number_of_blades", number_of_blades)
 
         # [G]:Slip Factor & Freestream Velocity
         slip_factor = 1 - 0.63 * np.pi / number_of_blades
+        setattr(outlet_debug_collector, "slip_factor", slip_factor)
 
         outlet_free_stream_velocity = (
             1 - slip_factor
@@ -270,12 +271,12 @@ def optimize_mass_flow(
         clearance_losses = (
             0.6
             * inputs.tip_clearance
-            / blade_thickness
+            / compressor_geometry.outlet_blade_height
             * V2.tangential
             * np.sqrt(
                 4
                 * np.pi
-                / (blade_thickness * number_of_blades)
+                / (compressor_geometry.outlet_blade_height * number_of_blades)
                 * np.ceil(
                     (D1.tip**2 / 4 - D1.hub**2 / 4)
                     / (
@@ -305,14 +306,14 @@ def optimize_mass_flow(
             W2,
             U2,
             number_of_blades,
-            blade_thickness,
+            compressor_geometry.outlet_blade_height,
         )
         setattr(outlet_debug_collector, "diffusion_losses", diffusion_losses)
 
         # Friction Losses
         friction_losses = CalculateFrictionalLosses(
             D2.mid,
-            blade_thickness,
+            compressor_geometry.outlet_blade_height,
             number_of_blades,
             pitch,
             pressure.static,
@@ -330,10 +331,12 @@ def optimize_mass_flow(
         eta_new = (eulerian_work - sum_of_enthalpy_losses) / eulerian_work
         residual = np.abs(eta_new - eta_0) / eta_0
 
-        print(f"'Iteration: {iteration} | Residual: {residual:0.4f}\n")
+        # print(f"Iteration: {iteration} | Residual: {residual:0.4f}\n")
         if residual < tolerance:
-            print(
-                f"Outlet calculations converged in {iteration} iterations; residual = {residual:0.6f}\n"
+            setattr(
+                outlet_debug_collector,
+                "Outlet loop result",
+                f"Outlet calculations converged in {iteration} iterations; residual = {residual:0.6f}\n",
             )
             break
 

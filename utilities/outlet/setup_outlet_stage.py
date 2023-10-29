@@ -96,4 +96,4 @@ def SetupOutletStage(
     )
     blade = ThreeDimensionalBlade(_mid=mid_velocity, _mid_mach_number=mid_mach_triangle)
 
-    return CompressorStage(ThermoPoint(temperature=temperature), blade)
+    return CompressorStage(ThermoPoint(_temperature=temperature), blade)

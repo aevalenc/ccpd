@@ -1,10 +1,10 @@
 {
-  "mass_flow_rate": 5.0,
+  "mass_flow_rate": 1.50,
   "inlet_total_pressure": 100000.0,
-  "inlet_total_temperature": 293.0,
+  "inlet_total_temperature": 303.0,
   "compression_ratio": 1.25,
-  "surface_roughness": 0.0025,
-  "tip_clearance": 0.001,
-  "hub_diameter": 0.2,
+  "surface_roughness": 0.00025,
+  "tip_clearance": 0.0005,
+  "hub_diameter": 0.1,
   "outlet_angle_guess": 65
 }
