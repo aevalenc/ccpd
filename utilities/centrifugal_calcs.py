@@ -64,7 +64,6 @@ def centrifugal_calcs(
 
     # [B]:Initial Calculations
     isentropic_exponent = (working_fluid.specific_ratio - 1.0) / working_fluid.specific_ratio
-
     inverse_isentropic_exponent = 1.0 / isentropic_exponent
 
     isentropic_work = (
@@ -86,6 +85,7 @@ def centrifugal_calcs(
     )
 
     rotational_speed = specific_speed * (isentropic_work**0.75) / np.sqrt(total_volume_flow_rate)
+    print("Rotational speed: ", rotational_speed)
     # wRPM  = w * 60/(2*pi);                  % [RPM]
     #     compressor.inlet.thermodynamic_point.
     # compressor.inlet.thermodynamic_point.
@@ -95,7 +95,9 @@ def centrifugal_calcs(
     compressor.outlet.blade.mid.translational.magnitude = (
         rotational_speed * compressor.geometry.outer_diameter / 2.0
     )
+
     eulerian_work = isentropic_work / end_to_end_efficiency
+    print("Eulerian work: ", eulerian_work)
     compressor.outlet.blade.mid.absolute.tangential = (
         eulerian_work / compressor.outlet.blade.mid.translational.magnitude
     )
@@ -152,6 +154,7 @@ def centrifugal_calcs(
     # % 	outlet blade height we assume an outlet absolute angle and check
     # % 	for stability in the vanless diffuser later
     alpha2 = 65 * (np.pi / 180.0)
+
     outlet = SetupOutletStage(
         alpha2,
         eulerian_work,
@@ -163,7 +166,7 @@ def centrifugal_calcs(
     # outlet.D2 = D2;
 
     # %% [G.1]:Loop and Iterate
-    max_outlet_loop_iterations = 10
+    max_outlet_loop_iterations = 2
     outlet_loop_tolerance = 1e-3
     optimize_mass_flow(
         inlet,
@@ -172,7 +175,7 @@ def centrifugal_calcs(
         working_fluid,
         inverse_isentropic_exponent,
         eulerian_work,
-        inputs.mass_flow_rate,
+        inputs,
         max_outlet_loop_iterations,
         outlet_loop_tolerance,
     )

@@ -171,9 +171,8 @@ def optimize_mass_flow(
         iteration += 1
 
         # [A]:Total & Static Temperature
-        temperature.total = (
-            inlet.thermodynamic_point.GetTemperature.total
-            + eulerian_work * eta_0 / fluid.specific_heat
+        temperature.total = inlet.thermodynamic_point.GetTemperature.total + (
+            eulerian_work * eta_0 / fluid.specific_heat
         )
 
         temperature.static = temperature.total - (V2.magnitude**2) / (2 * fluid.specific_heat)
@@ -184,8 +183,9 @@ def optimize_mass_flow(
         )
 
         # [B]:Isentropic Outlet Pressure
-        pressure.static = inlet.thermodynamic_point.GetPressure.static * (
-            temperature.static / inlet.thermodynamic_point.GetTemperature.static
+        print(inverse_exponent)
+        pressure.static = inlet.thermodynamic_point.pressure.static * (
+            temperature.static / inlet.thermodynamic_point.temperature.static
         ) ** (inverse_exponent)
 
         pressure.total = pressure.static * (
@@ -330,7 +330,7 @@ def optimize_mass_flow(
         eta_new = (eulerian_work - sum_of_enthalpy_losses) / eulerian_work
         residual = np.abs(eta_new - eta_0) / eta_0
 
-        # print('Iteration: %d | Residual: %0.4f\n', itr, residual)
+        print(f"'Iteration: {iteration} | Residual: {residual:0.4f}\n")
         if residual < tolerance:
             print(
                 f"Outlet calculations converged in {iteration} iterations; residual = {residual:0.6f}\n"
@@ -340,9 +340,14 @@ def optimize_mass_flow(
         # [K]:New Total Enthalpy Change & Eulerian Work
         isentropic_work_new = eulerian_work * eta_new
         eta_0 = eta_new
+        setattr(outlet_debug_collector, "Outlet efficiency", eta_0)
 
         if iteration == max_iterations:
-            print(f"{Fore.YELLOW}WARNING:{Fore.RESET} Max iterations reached")
+            setattr(
+                outlet_debug_collector,
+                "Outlet loop result",
+                f"{Fore.YELLOW}WARNING:{Fore.RESET} Max iterations reached",
+            )
             break
 
     outlet_debug_collector.Print()
