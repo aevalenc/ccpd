@@ -7,7 +7,7 @@ Update: 30 April, 2023
 from ccpd.data_types.thermo_point import ThermoPoint
 from ccpd.data_types.three_dimensional_blade import ThreeDimensionalBlade
 from ccpd.data_types.centrifugal_compressor_geometry import CompressorGeometry
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -16,9 +16,21 @@ class CompressorStage:
     Compressor stage class data type
     """
 
-    thermodynamic_point: ThermoPoint = ThermoPoint()
-    blade: ThreeDimensionalBlade = ThreeDimensionalBlade()
-    flow_area: float = 0.0
+    _thermodynamic_point: ThermoPoint = field(default_factory=lambda: ThermoPoint())
+    _blade: ThreeDimensionalBlade = field(default_factory=lambda: ThreeDimensionalBlade())
+    _flow_area: float = 0.0
+
+    @property
+    def thermodynamic_point(self) -> ThermoPoint:
+        return self._thermodynamic_point
+
+    @property
+    def blade(self) -> ThreeDimensionalBlade:
+        return self._blade
+
+    @property
+    def flow_area(self) -> float:
+        return self._flow_area
 
 
 @dataclass

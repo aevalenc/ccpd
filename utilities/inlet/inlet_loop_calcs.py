@@ -204,9 +204,9 @@ def InletLoop(
 
     inlet_loop_collector.Print()
     blade = ThreeDimensionalBlade(_mid=VelocityTriangle(_absolute=V))
-    inlet_thermo_point = ThermoPoint(pressure=P, density=rho, temperature=T)
+    inlet_thermo_point = ThermoPoint(_pressure=P, _density=rho, _temperature=T)
     inlet = CompressorStage(
-        thermodynamic_point=inlet_thermo_point, blade=blade, flow_area=inlet_flow_area
+        _thermodynamic_point=inlet_thermo_point, _blade=blade, _flow_area=inlet_flow_area
     )
 
     return inlet
