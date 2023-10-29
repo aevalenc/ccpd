@@ -4,6 +4,14 @@
 """
 
 import numpy as np
+from dataclasses import dataclass
+
+
+@dataclass
+class DiameterStruct:
+    hub: float = 0.0
+    mid: float = 0.0
+    tip: float = 0.0
 
 
 class CompressorGeometry:

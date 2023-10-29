@@ -11,12 +11,36 @@ class ThermodynamicVariable:
     Thermodynamic variable class data type
     """
 
-    static: float = 0.0
-    dynamic: float = 0.0
-    total: float = 0.0
+    _static: float = 0.0
+    _dynamic: float = 0.0
+    _total: float = 0.0
 
-    def __repr__(self) -> str:
-        return f"\n\tstatic: {self.static}\n\tdynamic: {self.dynamic}\n\ttotal: {self.total}"
+    @property
+    def static(self) -> float:
+        return self._static
+
+    @property
+    def dynamic(self) -> float:
+        return self._dynamic
+
+    @property
+    def total(self) -> float:
+        return self._total
+
+    @static.setter
+    def static(self, value) -> None:
+        self._static = value
+
+    @dynamic.setter
+    def dynamic(self, value) -> None:
+        self._dynamic = value
+
+    @total.setter
+    def total(self, value) -> None:
+        self._total = value
+
+    # def __repr__(self) -> str:
+    #     return f"\n\tstatic: {self.static}\n\tdynamic: {self.dynamic}\n\ttotal: {self.total}"
 
 
 @dataclass
@@ -25,19 +49,31 @@ class ThermoPoint:
     Thermo point class data type
     """
 
-    pressure: ThermodynamicVariable = field(default_factory=lambda: ThermodynamicVariable())
-    density: ThermodynamicVariable = field(default_factory=lambda: ThermodynamicVariable())
-    temperature: ThermodynamicVariable = field(default_factory=lambda: ThermodynamicVariable())
-    speed_of_sound: float = 0.0
+    _pressure: ThermodynamicVariable = field(default_factory=lambda: ThermodynamicVariable())
+    _density: ThermodynamicVariable = field(default_factory=lambda: ThermodynamicVariable())
+    _temperature: ThermodynamicVariable = field(default_factory=lambda: ThermodynamicVariable())
+    _speed_of_sound: float = 0.0
 
     @property
-    def GetTemperature(self) -> ThermodynamicVariable:
-        return self.temperature
+    def temperature(self) -> ThermodynamicVariable:
+        return self._temperature
 
     @property
-    def GetPressure(self) -> ThermodynamicVariable:
-        return self.pressure
+    def pressure(self) -> ThermodynamicVariable:
+        return self._pressure
 
     @property
-    def GetDensity(self) -> ThermodynamicVariable:
-        return self.density
+    def density(self) -> ThermodynamicVariable:
+        return self._density
+
+    @temperature.setter
+    def temperature(self, value) -> None:
+        self._temperature = value
+
+    @pressure.setter
+    def pressure(self, value) -> None:
+        self._pressure = value
+
+    @density.setter
+    def density(self, value) -> None:
+        self._density = value

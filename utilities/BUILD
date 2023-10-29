@@ -9,5 +9,7 @@ py_library(
         "//ccpd/data_types:working_fluid",
         "//ccpd/utilities/inlet:inlet_loop_calcs",
         "//ccpd/utilities/inlet:inlet_utils",
+        "//ccpd/utilities/outlet:optimize_mass_flow_rate",
+        "//ccpd/utilities/outlet:setup_outlet_stage",
     ],
 )
