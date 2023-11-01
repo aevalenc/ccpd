@@ -5,8 +5,9 @@
  Update: 24 July, 2020
 """
 
-from data_types.inputs import DesignParameters, Inputs
-from utilities.centrifugal_calcs import centrifugal_calcs
+from ccpd.data_types.inputs import DesignParameters, Inputs
+from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
+from ccpd.utilities.centrifugal_calcs import centrifugal_calcs
 import json
 import sys
 from colorama import Fore
@@ -47,14 +48,14 @@ def main(design_stage, varargin):
         try:
             design_parameter_file = open("ccpd/design_parameters.json", "r")
         except IOError as io_error:
-            print(f"Error\[{io_error}\] Design parameters import failed!")
+            print(f"Error:{io_error} Design parameters import failed!")
             sys.exit()
         design_parameters = DesignParameters(json.load(design_parameter_file))
 
         try:
             input_file = open("ccpd/inputs.json", "r")
         except IOError as io_error:
-            print(f"Error\[{io_error}\] input parameters import failed!")
+            print(f"Error:{io_error} input parameters import failed!")
             sys.exit()
         inputs = Inputs(json.load(input_file))
 
@@ -67,7 +68,7 @@ def main(design_stage, varargin):
             tol = 1e-5
 
         # [C]:Run Analysis
-        # design = CentrifugalCompressor()
+        design = CentrifugalCompressor()
         for itr in range(1, itrmx):
             print(f"Main Iteration: {itr}\n")
 
@@ -92,9 +93,11 @@ def main(design_stage, varargin):
 
             # # [F]:Reset Efficiency & Iterate
             # eta_tt = design.diff.eta_tt
-        print(f"{Fore.GREEN}[ccpd]: finished successfully")
+        print(f"{Fore.GREEN}[ccpd]: exited successfully{Fore.RESET}")
 
-    return design
+        return design
+    else:
+        print("Alternative modes TBD")
 
 
 if __name__ == "__main__":
