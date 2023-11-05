@@ -27,7 +27,7 @@ py_library(
 py_library(
     name = "centrifugal_compressor",
     srcs = ["centrifugal_compressor.py"],
-    visibility = ["//ccpd:__subpackages__"],
+    visibility = ["//:__subpackages__"],
     deps = [
         ":centrifugal_compressor_geometry",
         ":thermo_point",
