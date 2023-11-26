@@ -10,6 +10,7 @@ py_library(
     name = "inputs",
     srcs = ["inputs.py"],
     visibility = ["//ccpd:__subpackages__"],
+    deps = ["@python_deps_attrs//:pkg"],
 )
 
 py_library(

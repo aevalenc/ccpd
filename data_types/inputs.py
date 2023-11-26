@@ -9,6 +9,8 @@
              mat   : Compressor material
 """
 
+from attrs import frozen
+
 
 class DesignParameters:
     """
@@ -18,12 +20,8 @@ class DesignParameters:
     def __init__(self, design_parameter_dictionary) -> None:
         self.__dict__.update(design_parameter_dictionary)
         self.specific_diameter = design_parameter_dictionary.get("specific_diameter")
-        self.specific_rotational_speed = design_parameter_dictionary.get(
-            "specific_rotational_speed"
-        )
-        self.end_to_end_efficiency = design_parameter_dictionary.get(
-            "end_to_end_efficiency"
-        )
+        self.specific_rotational_speed = design_parameter_dictionary.get("specific_rotational_speed")
+        self.end_to_end_efficiency = design_parameter_dictionary.get("end_to_end_efficiency")
         self.fluid = design_parameter_dictionary.get("fluid")
         self.material = design_parameter_dictionary.get("material")
 
@@ -42,3 +40,35 @@ class Inputs:
         self.surface_roughness = input_dictionary.get("surface_roughness")
         self.tip_clearance = input_dictionary.get("tip_clearance")
         self.hub_diameter = input_dictionary.get("hub_diameter")
+
+
+@frozen
+class InputsII:
+    """
+    inputs
+    """
+
+    mass_flow_rate: float
+    inlet_total_pressure: float
+    inlet_total_temperature: float
+    compression_ratio: float
+    surface_roughness: float
+    tip_clearance: float
+    hub_diameter: float
+
+
+@frozen
+class DesignInputs:
+    mass_flow_rate: float
+    inlet_total_pressure: float
+    inlet_total_temperature: float
+    compression_ratio: float
+    surface_roughness: float
+    tip_clearance: float
+    hub_diameter: float
+    outlet_angle_guess: float
+    specific_diameter: float
+    specific_rotational_speed: float
+    end_to_end_efficiency: float
+    fluid: str
+    material: str

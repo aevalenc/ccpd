@@ -2,10 +2,10 @@
  Author: Alejandro Valencia
  
  Main Function
- Update: 24 July, 2020
+ Update: 25 November, 2023
 """
 
-from ccpd.data_types.inputs import DesignParameters, Inputs
+from ccpd.data_types.inputs import DesignInputs, DesignParameters, Inputs, InputsII
 from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
 from ccpd.utilities.centrifugal_calcs import centrifugal_calcs
 import json
@@ -72,6 +72,23 @@ def main(design_stage: str, caller: str = "cli"):
             # TODO: Load parameters from neptune gui
             design_parameters, inputs = load_base_inputs()
 
+        try:
+            input_file = open("ccpd/neptune_inputs.json", "r")
+        except IOError as io_error:
+            print(f"Error:{io_error} input parameters import failed!")
+            sys.exit()
+        loaded_file = json.load(input_file)
+        design_inputs = DesignInputs(**(loaded_file))
+        inputsII = InputsII(
+            mass_flow_rate=design_inputs.mass_flow_rate,
+            inlet_total_temperature=design_inputs.inlet_total_temperature,
+            inlet_total_pressure=design_inputs.inlet_total_pressure,
+            compression_ratio=design_inputs.compression_ratio,
+            surface_roughness=design_inputs.surface_roughness,
+            tip_clearance=design_inputs.tip_clearance,
+            hub_diameter=design_inputs.hub_diameter,
+        )
+
         # [B] Set Loop Parameters
         itrmx = 2
         tol = 1e-5
@@ -83,11 +100,11 @@ def main(design_stage: str, caller: str = "cli"):
 
             # [D]:Run Centrifugal Preliminary Design Calculations
             design = centrifugal_calcs(
-                design_parameters.specific_diameter,
-                design_parameters.specific_rotational_speed,
-                design_parameters.end_to_end_efficiency,
-                design_parameters.fluid,
-                design_parameters.material,
+                design_inputs.specific_diameter,
+                design_inputs.specific_rotational_speed,
+                design_inputs.end_to_end_efficiency,
+                design_inputs.fluid,
+                design_inputs.material,
                 inputs,
             )
 
