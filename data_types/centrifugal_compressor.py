@@ -39,7 +39,7 @@ class CentrifugalCompressor:
     Final centrifugal compressor class data type
     """
 
-    total_efficiency: float = 0.0
+    total_efficiency: float = 1.0
     total_compression_ratio: float = 0.0
     impeller_compression_ratio: float = 0.0
     inlet_tip_to_outlet_diameter_ratio: float = 0.0
