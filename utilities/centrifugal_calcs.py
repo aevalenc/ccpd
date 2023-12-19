@@ -17,6 +17,9 @@ import json
 import sys
 import numpy as np
 from pprint import pprint
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def centrifugal_calcs(
@@ -75,46 +78,30 @@ def centrifugal_calcs(
     # @todo Create a method within the centrifugal compressor class to initialize the inlet with these initial values
     compressor.geometry.inlet_hub_diameter = inputs.hub_diameter
     density = ThermodynamicVariable()
-    density.total = inputs.inlet_total_pressure / (
-        working_fluid.specific_gas_constant * inputs.inlet_total_temperature
-    )
+    density.total = inputs.inlet_total_pressure / (working_fluid.specific_gas_constant * inputs.inlet_total_temperature)
     total_volume_flow_rate = inputs.mass_flow_rate / density.total
 
-    compressor.geometry.outer_diameter = (
-        specific_diameter * np.sqrt(total_volume_flow_rate) / (isentropic_work**0.25)
-    )
+    compressor.geometry.outer_diameter = specific_diameter * np.sqrt(total_volume_flow_rate) / (isentropic_work**0.25)
 
     rotational_speed = specific_speed * (isentropic_work**0.75) / np.sqrt(total_volume_flow_rate)
-    print("Rotational speed: ", rotational_speed)
-    # wRPM  = w * 60/(2*pi);                  % [RPM]
-    #     compressor.inlet.thermodynamic_point.
-    # compressor.inlet.thermodynamic_point.
-    # compressor.inlet.thermodynamic_point.
+    logger.info(f"Rotational speed: {rotational_speed:8.6} ({rotational_speed * 60/(2*np.pi):6.6} [RPM])")
 
     # [C]:Calculate Velocities and Eulerian Work
-    compressor.outlet.blade.mid.translational.magnitude = (
-        rotational_speed * compressor.geometry.outer_diameter / 2.0
-    )
+    compressor.outlet.blade.mid.translational.magnitude = rotational_speed * compressor.geometry.outer_diameter / 2.0
 
     eulerian_work = isentropic_work / end_to_end_efficiency
-    print("Eulerian work: ", eulerian_work)
+    logger.info(f"Eulerian work: {eulerian_work}")
     compressor.outlet.blade.mid.absolute.tangential = (
         eulerian_work / compressor.outlet.blade.mid.translational.magnitude
     )
 
     # [D]:Calculate Flow Perfomance Indicators
-    compressor.stage_loading = isentropic_work / np.square(
-        compressor.outlet.blade.mid.absolute.tangential
-    )
+    compressor.stage_loading = isentropic_work / np.square(compressor.outlet.blade.mid.absolute.tangential)
     compressor.flow_coefficient = inputs.mass_flow_rate / (
-        density.total
-        * (
-            compressor.outlet.blade.mid.absolute.tangential
-            * (compressor.geometry.outer_diameter / 2.0)
-        )
+        density.total * (compressor.outlet.blade.mid.absolute.tangential * (compressor.geometry.outer_diameter / 2.0))
     )
     compressor.blade_orientation_ratio = (
-        compressor.outlet.blade.mid.absolute.axial / compressor.outlet.blade.mid.absolute.tangential
+        compressor.outlet.blade.mid.absolute.tangential / compressor.outlet.blade.mid.translational.magnitude
     )
 
     # %% [E]:Hub Diameter
