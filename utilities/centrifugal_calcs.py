@@ -8,7 +8,7 @@ Update: 30 April, 2023
 from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
 from ccpd.data_types.thermo_point import ThermodynamicVariable
 from ccpd.data_types.working_fluid import WorkingFluid
-from ccpd.data_types.inputs import Inputs
+from ccpd.data_types.inputs import InputsII
 from ccpd.utilities.inlet.inlet_loop_calcs import InletLoop
 from ccpd.utilities.inlet.inlet_utils import CalculateRemainingInletQuantities
 from ccpd.utilities.outlet.setup_outlet_stage import SetupOutletStage
@@ -28,7 +28,7 @@ def centrifugal_calcs(
     end_to_end_efficiency,
     fluid,
     material,
-    inputs: Inputs,
+    inputs: InputsII,
 ) -> CentrifugalCompressor:
     """
     This function takes initial design parameters and calculates the first
