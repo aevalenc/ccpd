@@ -10,13 +10,13 @@ from ccpd.data_types.thermo_point import ThermodynamicVariable
 from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.data_types.inputs import Inputs
 from ccpd.utilities.inlet.inlet_loop_calcs import InletLoop
-from ccpd.utilities.outlet.setup_outlet_stage import SetupOutletStage
 from ccpd.utilities.inlet.inlet_utils import CalculateRemainingInletQuantities
+from ccpd.utilities.outlet.setup_outlet_stage import SetupOutletStage
 from ccpd.utilities.outlet.optimize_mass_flow_rate import optimize_mass_flow
+from ccpd.utilities.vaneless_diffuser.vaneless_diffuser import vaneless_diffuser_calcs
 import json
 import sys
 import numpy as np
-from pprint import pprint
 import logging
 
 logger = logging.getLogger(__name__)
@@ -130,13 +130,14 @@ def centrifugal_calcs(
         inlet_loop_tolerance,
     )
 
-    # %% [F.1]:Inlet Geometry
+    #  [F.1]:Inlet Geometry
     compressor.geometry.CalculateInletBladeHeightAndRatios()
     inlet.blade.CalculateComponentsViaFreeVortexMethod(compressor.geometry, rotational_speed)
     CalculateRemainingInletQuantities(inlet, working_fluid)
     inlet.thermodynamic_point.density.total = density.total
+    inlet.thermodynamic_point.pressure.total = inputs.inlet_total_pressure
 
-    # %% [G]:Outlet
+    #  [G]:Outlet
     # % This for the moment is a little vague. Since we do not know our
     # % 	outlet blade height we assume an outlet absolute angle and check
     # % 	for stability in the vanless diffuser later
@@ -149,10 +150,12 @@ def centrifugal_calcs(
         inputs,
         working_fluid,
     )
-    # outlet.X2 = cp * (outlet.T2 - inlet.T1) / l_eul;  % []    Reaction
+    logger.info(
+        f"Reaction: {working_fluid.specific_heat * (outlet.thermodynamic_point.temperature.static - inlet.thermodynamic_point.temperature.static) / eulerian_work}"
+    )
     # outlet.D2 = D2;
 
-    # %% [G.1]:Loop and Iterate
+    #  [G.1]:Loop and Iterate
     max_outlet_loop_iterations = 10
     outlet_loop_tolerance = 1e-3
     optimize_mass_flow(
@@ -167,20 +170,46 @@ def centrifugal_calcs(
         outlet_loop_tolerance,
     )
     # [outlet,inlet.beta1_geo,Nb] = outlet_loop(inlet, outlet, l_eul, itrmx, tol);
-    # Bc    = outlet.PT2 / PT1; % Impeller compression ratio
+    compressor.impeller_compression_ratio = (
+        outlet.thermodynamic_point.pressure.total / inlet.thermodynamic_point.pressure.total
+    )
+    logger.debug(f"Impeller compression ratio: {compressor.impeller_compression_ratio:.3}")
 
-    # %% []:Diffusion & Check For Stall
-    # % This diffusion factor is based on the Dixon book. Lieblein,
-    # %   Schwenk, and Broderick (1953) developed a general diffusion
-    # %   factor to check for stall.
-    # DR     = abs(inlet.W1.mid.tan / outlet.W2.mag);
-    # DH.hub = outlet.W2.mag / inlet.W1.hub.mag;
-    # DH.mid = outlet.W2.mag / inlet.W1.mid.mag;
-    # DH.tip = outlet.W2.mag / inlet.W1.tip.mag;
-    # DF     = (1 - outlet.W2.mag / inlet.W1.mid.mag) + ...
-    #           abs(inlet.W1.mid.tan - outlet.W2.tan) / (2 * inlet.W1.mid.mag) * 0.4;
+    # []:Diffusion & Check For Stall
+    # This diffusion factor is based on the Dixon book. Lieblein,
+    #   Schwenk, and Broderick (1953) developed a general diffusion
+    #   factor to check for stall.
+    DR = np.abs(inlet.blade.mid.relative.tangential / outlet.blade.mid.relative.magnitude)
+    DH = {
+        "hub": outlet.blade.mid.relative.magnitude / inlet.blade.hub.relative.magnitude,
+        "mid": outlet.blade.mid.relative.magnitude / inlet.blade.mid.relative.magnitude,
+        "tip": outlet.blade.mid.relative.magnitude / inlet.blade.tip.relative.magnitude,
+    }
+    DF = (1 - outlet.blade.mid.relative.magnitude / inlet.blade.mid.relative.magnitude) + np.abs(
+        inlet.blade.mid.relative.tangential - outlet.blade.mid.relative.tangential
+    ) / (2 * inlet.blade.mid.relative.magnitude) * 0.4
+    logger.debug(f"Diffusion ratios:\nDR: {DR}\nDH: {DH}\nDF: {DF}")
 
-    # %% [I]:Ouput
+    #  []:Vanless & Vaned Diffuser Calculations
+    compressor.vaneless_diffuser = vaneless_diffuser_calcs(
+        outlet, compressor.geometry, working_fluid, inputs.mass_flow_rate, 100, 0.001
+    )
+    # result = diffuser_calcs(result);
+    # result = diff_diameter(result);
+    # result.comp.eta_tt = result.diff.eta_tt;
+
+    #  []:Post Calculations
+    # NDmdot = mdot * sqrt(y * Rh * TT1) / (inlet.S1 * PT1);
+    # etap   = k * log(result.diff.Be)/log(result.diff.TT4 / TT1);
+    # C      = 1 / (B ^ (1 - (y-1)/(2 * y * etap)));
+
+    # result.comp.NDmdot = NDmdot;    % [] Non-dimensional mass flow rate
+    # result.comp.etap   = etap;      % [] Polytropic efficiency
+    # result.comp.C      = C;         % [] Operating line constant
+    # oo = 0
+    return compressor
+
+    #  [I]:Ouput
     # result.inlet      = inlet;      % []      Inlet operating conditions
     # result.inlet.in   = outlet.in;  % []      Inlet incidence angle
     # result.outlet     = outlet;     % []      Outlet operating conditions
@@ -209,20 +238,3 @@ def centrifugal_calcs(
     # result.comp.DR    = DR;         % []      Diffusion ratio
     # result.comp.DH    = DH;         % []      De Haller number
     # result.comp.DF    = DF;         % []      Lieblein diffusion factor
-
-    # %% []:Vanless & Vaned Diffuser Calculations
-    # result = vaneless_diffuser_calcs(result, 10, 1e-3);
-    # result = diffuser_calcs(result);
-    # result = diff_diameter(result);
-    # result.comp.eta_tt = result.diff.eta_tt;
-
-    # %% []:Post Calculations
-    # NDmdot = mdot * sqrt(y * Rh * TT1) / (inlet.S1 * PT1);
-    # etap   = k * log(result.diff.Be)/log(result.diff.TT4 / TT1);
-    # C      = 1 / (B ^ (1 - (y-1)/(2 * y * etap)));
-
-    # result.comp.NDmdot = NDmdot;    % [] Non-dimensional mass flow rate
-    # result.comp.etap   = etap;      % [] Polytropic efficiency
-    # result.comp.C      = C;         % [] Operating line constant
-    # oo = 0
-    return compressor
