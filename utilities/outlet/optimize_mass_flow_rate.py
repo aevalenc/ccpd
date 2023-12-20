@@ -12,6 +12,9 @@ from ccpd.data_types.centrifugal_compressor_geometry import DiameterStruct
 from ccpd.utilities.outlet.friction_coefficient import CalculateFrictionCoefficient
 import numpy as np
 from colorama import Fore
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class OutletLoopCollector:
@@ -53,8 +56,7 @@ def calculate_geometric_inlet_angle(
         section_area = np.pi * section_length - number_of_blades * blade_thickness
         optimal_area = np.pi * section_length
         geometric_inlet_angle = np.arctan(
-            (section_area / optimal_area)
-            * np.tan(inlet_relative_velocity_angles_dict[section_name].relative.angle)
+            (section_area / optimal_area) * np.tan(inlet_relative_velocity_angles_dict[section_name].relative.angle)
         )
         geometric_inlet_angle_dict[section_name] = geometric_inlet_angle
 
@@ -73,7 +75,7 @@ def CalculateDiffusionLosses(
     blade_height: float,
 ) -> tuple[float, float]:
     hydraulic_length = (D2.mid / 2 - D1.mid / 2) / np.cos(average_inlet_relative_angle)
-    average_relative_inlet_velocity = np.mean(inlet_relative_velocities)
+    average_relative_inlet_velocity = np.mean(inlet_relative_velocities).astype(float)
     diffusion_factor = (
         1
         - outlet_relative_velocity.magnitude / average_relative_inlet_velocity
@@ -110,9 +112,7 @@ def CalculateFrictionalLosses(
     outlet_flow_area = np.pi * outlet_diameter * blade_height
     outlet_flow_perimeter = number_of_blades * (2 * blade_height + 2 * pitch)
     hydraulic_diameter = 4 * outlet_flow_area / outlet_flow_perimeter
-    reynolds_number = (
-        static_density * outlet_relative_velocity.magnitude * hydraulic_diameter / slip_factor
-    )
+    reynolds_number = static_density * outlet_relative_velocity.magnitude * hydraulic_diameter / slip_factor
 
     # Enthalpy increase
     relative_roughness = surface_roughness / hydraulic_diameter
@@ -121,11 +121,7 @@ def CalculateFrictionalLosses(
 
     return (
         4
-        * (
-            adjusted_friction_coefficient
-            * hydraulic_length
-            * outlet_relative_velocity.magnitude**2
-        )
+        * (adjusted_friction_coefficient * hydraulic_length * outlet_relative_velocity.magnitude**2)
         / (2 * hydraulic_diameter)
     )
 
@@ -169,14 +165,12 @@ def optimize_mass_flow(
     geometric_inlet_angle = {}
     for iteration in range(0, max_iterations):
         iteration += 1
+        logger.debug(f"Iteration: {iteration}")
 
         # [A]:Total & Static Temperature
-        temperature.total = inlet.thermodynamic_point.temperature.total + (
-            eulerian_work * eta_0 / fluid.specific_heat
-        )
-
+        temperature.total = inlet.thermodynamic_point.temperature.total + (eulerian_work * eta_0 / fluid.specific_heat)
         temperature.static = temperature.total - (V2.magnitude**2) / (2 * fluid.specific_heat)
-        setattr(outlet_debug_collector, "outlet_temperature", temperature)
+        logger.debug(f"Outlet temperature: {temperature}")
 
         outlet.blade.mid_mach_number.absolute = V2.magnitude / np.sqrt(
             fluid.specific_ratio * fluid.specific_heat * temperature.static
@@ -189,14 +183,13 @@ def optimize_mass_flow(
 
         pressure.total = pressure.static * (
             1.0
-            + ((fluid.specific_ratio - 1.0) / 2.0)
-            * (outlet.blade.mid_mach_number.absolute**2) ** inverse_exponent
+            + ((fluid.specific_ratio - 1.0) / 2.0) * (outlet.blade.mid_mach_number.absolute**2) ** inverse_exponent
         )
-        setattr(outlet_debug_collector, "outlet_pressure", pressure)
+        logger.debug(f"Outlet pressure: {pressure}")
 
         # [C]:Density & Blade Height
         density.static = pressure.static / (fluid.specific_gas_constant * temperature.static)
-        setattr(outlet_debug_collector, "outlet_density", density)
+        logger.debug(f"Outlet density: {density}")
 
         compressor_geometry.outlet_blade_height = inputs.mass_flow_rate / (
             density.static * np.pi * compressor_geometry.outer_diameter * V2.axial
@@ -220,28 +213,19 @@ def optimize_mass_flow(
         number_of_blades = (
             2
             * (np.pi * np.cos(average_inlet_relative_angle))
-            / (
-                inverse_solidity
-                * np.log(
-                    (compressor_geometry.outer_diameter / compressor_geometry.inlet_mid_diameter)
-                )
-            )
+            / (inverse_solidity * np.log((compressor_geometry.outer_diameter / compressor_geometry.inlet_mid_diameter)))
         )
         number_of_blades = np.ceil(number_of_blades) + 1
         pitch = np.pi * compressor_geometry.outer_diameter / number_of_blades
         chord = pitch / inverse_solidity
-        setattr(outlet_debug_collector, "number_of_blades", number_of_blades)
+        logger.debug(f"Number of blades: {number_of_blades}")
 
         # [G]:Slip Factor & Freestream Velocity
         slip_factor = 1 - 0.63 * np.pi / number_of_blades
-        setattr(outlet_debug_collector, "slip_factor", slip_factor)
+        logger.debug(f"Slip factor: {slip_factor}")
 
-        outlet_free_stream_velocity = (
-            1 - slip_factor
-        ) * outlet.blade.mid.translational.magnitude + V2.tangential
-
+        outlet_free_stream_velocity = (1 - slip_factor) * outlet.blade.mid.translational.magnitude + V2.tangential
         outlet_free_stream_relative_velocity = outlet_free_stream_velocity - U2.magnitude
-
         geometric_outlet_angle = np.arctan(outlet_free_stream_relative_velocity / W2.axial)
 
         #  [I]:Calculate Losses
@@ -258,8 +242,8 @@ def optimize_mass_flow(
         )
         incidence = geometric_inlet_angle["hub"] - inlet.blade.hub.relative.angle
         incidence_losses = ((inlet.blade.hub.relative.magnitude * np.sin(incidence)) ** 2) / 2.0
-        setattr(outlet_debug_collector, "geometric_relative_velocity_angles", geometric_inlet_angle)
-        setattr(outlet_debug_collector, "incidence_losses", incidence_losses)
+        logger.debug(f"geometric_relative_velocity_angles: {geometric_inlet_angle}")
+        logger.debug(f"incidence_losses: {incidence_losses}")
 
         # Tip clearance
         # From paper provided by Gaetani we found the following relation to
@@ -279,16 +263,13 @@ def optimize_mass_flow(
                 / (compressor_geometry.outlet_blade_height * number_of_blades)
                 * np.ceil(
                     (D1.tip**2 / 4 - D1.hub**2 / 4)
-                    / (
-                        (D2.mid / 2 - D1.tip / 2)
-                        * (1 + pressure.static / inlet.thermodynamic_point.pressure.static)
-                    )
+                    / ((D2.mid / 2 - D1.tip / 2) * (1 + pressure.static / inlet.thermodynamic_point.pressure.static))
                 )
                 * V2.tangential
                 * inlet.blade.mid.absolute.axial
             )
         )
-        setattr(outlet_debug_collector, "clearance_losses", clearance_losses)
+        logger.debug(f"clearance_losses: {clearance_losses}")
 
         # [I.3]:Blade Losses
         inlet_relative_velocities = [
@@ -308,7 +289,7 @@ def optimize_mass_flow(
             number_of_blades,
             compressor_geometry.outlet_blade_height,
         )
-        setattr(outlet_debug_collector, "diffusion_losses", diffusion_losses)
+        logger.debug(f"diffusion_losses: {diffusion_losses:.3}")
 
         # Friction Losses
         friction_losses = CalculateFrictionalLosses(
@@ -322,37 +303,29 @@ def optimize_mass_flow(
             inputs.surface_roughness,
             hydraulic_length,
         )
-        setattr(outlet_debug_collector, "friction_losses", friction_losses)
+        logger.debug(f"friction_losses: {friction_losses:.3}")
 
         # [J]:Calculate New Efficiency
-        sum_of_enthalpy_losses = np.sum(
-            [diffusion_losses, friction_losses, clearance_losses, incidence_losses]
-        )
+        sum_of_enthalpy_losses = np.sum([diffusion_losses, friction_losses, clearance_losses, incidence_losses])
         eta_new = (eulerian_work - sum_of_enthalpy_losses) / eulerian_work
         residual = np.abs(eta_new - eta_0) / eta_0
 
-        # print(f"Iteration: {iteration} | Residual: {residual:0.4f}\n")
+        logger.debug(f"Residual: {residual:0.4f}\n")
         if residual < tolerance:
-            setattr(
-                outlet_debug_collector,
-                "Outlet loop result",
-                f"Outlet calculations converged in {iteration} iterations; residual = {residual:0.6f}\n",
-            )
+            logger.info(f"Outlet calculations converged in {iteration} iterations; residual = {residual:0.6f}")
             break
 
         # [K]:New Total Enthalpy Change & Eulerian Work
         isentropic_work_new = eulerian_work * eta_new
         eta_0 = eta_new
-        setattr(outlet_debug_collector, "Outlet efficiency", eta_0)
+        logger.debug(f"Outlet efficiency: {eta_0}")
 
         if iteration == max_iterations:
-            setattr(
-                outlet_debug_collector,
-                "Outlet loop result",
-                f"{Fore.YELLOW}WARNING:{Fore.RESET} Max iterations reached",
-            )
+            logger.warning(f"{Fore.YELLOW}WARNING:{Fore.RESET} Max iterations reached")
             break
 
-    outlet_debug_collector.Print()
+        outlet.thermodynamic_point.pressure = pressure
+        outlet.thermodynamic_point.temperature = temperature
+        outlet.thermodynamic_point.density = density
 
     return (outlet, geometric_inlet_angle, number_of_blades)
