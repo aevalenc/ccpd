@@ -41,6 +41,7 @@ class CentrifugalCompressor:
 
     total_efficiency: float = 0.0
     total_compression_ratio: float = 0.0
+    impeller_compression_ratio: float = 0.0
     inlet_tip_to_outlet_diameter_ratio: float = 0.0
     inlet_hub_to_tip_diameter_ratio: float = 0.0
     diameter_safety_factor: float = 0.0
@@ -55,6 +56,7 @@ class CentrifugalCompressor:
 
     inlet: CompressorStage = CompressorStage()
     outlet: CompressorStage = CompressorStage()
+    vaneless_diffuser: CompressorStage = CompressorStage()
     diffuser: CompressorStage = CompressorStage()
 
     geometry = CompressorGeometry()

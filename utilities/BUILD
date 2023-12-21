@@ -11,5 +11,6 @@ py_library(
         "//ccpd/utilities/inlet:inlet_utils",
         "//ccpd/utilities/outlet:optimize_mass_flow_rate",
         "//ccpd/utilities/outlet:setup_outlet_stage",
+        "//ccpd/utilities/vaneless_diffuser",
     ],
 )
