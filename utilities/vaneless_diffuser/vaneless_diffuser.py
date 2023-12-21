@@ -8,7 +8,7 @@ import numpy as np
 from ccpd.data_types.centrifugal_compressor import CompressorStage
 from ccpd.data_types.centrifugal_compressor_geometry import CompressorGeometry
 from ccpd.data_types.thermo_point import ThermoPoint, ThermodynamicVariable
-from ccpd.data_types.three_dimensional_blade import ThreeDimensionalBlade, VelocityTriangle
+from ccpd.data_types.three_dimensional_blade import MachTriangle, ThreeDimensionalBlade, VelocityTriangle
 from ccpd.data_types.working_fluid import WorkingFluid
 import logging
 
@@ -22,7 +22,7 @@ def vaneless_diffuser_calcs(
     mass_flow_rate: float,
     max_iterations: int,
     tolerance: float,
-) -> CompressorStage:
+) -> tuple[CompressorStage, float]:
     """
     This function takes a current compressor design and calculates the
          necessary quantities for a vanless diffuser. For the purposes of this
@@ -73,6 +73,7 @@ def vaneless_diffuser_calcs(
     temperature.total = outlet_temperature.total  # [K]
     density.static = outlet_density.static  # [kg/m^3]
     V3 = V2  # [m/s]
+    M3 = MachTriangle()
     hydraulic_diameter = (4 * np.pi * D3 * b3) / (2 * (np.pi * D3 + b3))  # [m]
     logger.debug(f"Hydraulic diameter: {hydraulic_diameter}")
 
@@ -101,7 +102,7 @@ def vaneless_diffuser_calcs(
 
         # []:Thermodynamic Values
         temperature.static = temperature.total - V3.magnitude**2 / (2 * working_fluid.specific_heat)
-        M3 = V3.magnitude / np.sqrt(
+        M3.absolute = V3.magnitude / np.sqrt(
             working_fluid.specific_ratio * working_fluid.specific_gas_constant * temperature.static
         )
 
@@ -116,7 +117,7 @@ def vaneless_diffuser_calcs(
         pressure.total = outlet_pressure.static * (TT3is / outlet_temperature.static) ** (
             working_fluid.specific_ratio / (working_fluid.specific_ratio - 1)
         )
-        pressure.static = pressure.total / (1 + (working_fluid.specific_ratio - 1) / 2 * M3**2) ** (
+        pressure.static = pressure.total / (1 + (working_fluid.specific_ratio - 1) / 2 * M3.absolute**2) ** (
             working_fluid.specific_ratio / (working_fluid.specific_ratio - 1)
         )
 
@@ -136,23 +137,10 @@ def vaneless_diffuser_calcs(
 
         density.static = new_density
 
-    # []:Output
-    # design.vldiff.D3    = D3;       % [m]      Outlet diameter
-    # design.vldiff.V3    = V3;       % [m/s]    Outlet velocity
-    # design.vldiff.PT3 = PT3;    % [Pa]     Isentropic total pressure
-    # design.vldiff.P3  = P3;     % [Pa]     Isentropic static pressure
-    # design.vldiff.TT3is = TT3is;    % [K]      Isentropic total temperature
-    # design.vldiff.temperature.total   = TT3;      % [K]      Real total temperature
-    # design.vldiff.T3    = T3;       % [K]      Real static temperature
-    # design.vldiff.T3is  = T3is;       % [K]      Real static temperature
-    # design.vldiff.cf    = cf;       % []       Friction coefficent
-    # design.vldiff.rho3  = rho3;     % [kg/m^3] Density
-    # design.vldiff.M3    = M3;       % []       Real absoulte Mach number
-    # design.vldiff.enthalpy_drop    = dh;       % [J/kg]   Enthalpy losses
-    # design.vldiff.b3    = b3;       % [m]      "Blade height"
     vaneless_diffuser = CompressorStage(
-        ThermoPoint(pressure, density, temperature), ThreeDimensionalBlade(_mid=VelocityTriangle(_absolute=V3))
+        ThermoPoint(pressure, density, temperature),
+        ThreeDimensionalBlade(_mid=VelocityTriangle(_absolute=V3), _mid_mach_number=M3),
     )
     logger.debug(f"Vaneless diffuser: {vaneless_diffuser}")
 
-    return vaneless_diffuser
+    return vaneless_diffuser, D3

@@ -137,10 +137,10 @@ def centrifugal_calcs(
     inlet.thermodynamic_point.density.total = density.total
     inlet.thermodynamic_point.pressure.total = inputs.inlet_total_pressure
 
-    #  [G]:Outlet
-    # % This for the moment is a little vague. Since we do not know our
-    # % 	outlet blade height we assume an outlet absolute angle and check
-    # % 	for stability in the vanless diffuser later
+    # [G]:Outlet
+    # This for the moment is a little vague. Since we do not know our
+    # 	outlet blade height we assume an outlet absolute angle and check
+    # 	for stability in the vanless diffuser later
     alpha2 = 65 * (np.pi / 180.0)
 
     outlet = SetupOutletStage(
@@ -150,12 +150,15 @@ def centrifugal_calcs(
         inputs,
         working_fluid,
     )
-    logger.info(
-        f"Reaction: {working_fluid.specific_heat * (outlet.thermodynamic_point.temperature.static - inlet.thermodynamic_point.temperature.static) / eulerian_work}"
+    X = (
+        working_fluid.specific_heat
+        * (outlet.thermodynamic_point.temperature.static - inlet.thermodynamic_point.temperature.static)
+        / eulerian_work
     )
+    logger.info(f"Reaction: {X:0.3}")
     # outlet.D2 = D2;
 
-    #  [G.1]:Loop and Iterate
+    # [G.1]:Loop and Iterate
     max_outlet_loop_iterations = 10
     outlet_loop_tolerance = 1e-3
     optimize_mass_flow(
@@ -176,7 +179,7 @@ def centrifugal_calcs(
     logger.debug(f"Impeller compression ratio: {compressor.impeller_compression_ratio:.3}")
 
     # []:Diffusion & Check For Stall
-    # This diffusion factor is based on the Dixon book. Lieblein,
+    # The diffusion factor, DF, is based on the Dixon book. Lieblein,
     #   Schwenk, and Broderick (1953) developed a general diffusion
     #   factor to check for stall.
     DR = np.abs(inlet.blade.mid.relative.tangential / outlet.blade.mid.relative.magnitude)
@@ -188,10 +191,10 @@ def centrifugal_calcs(
     DF = (1 - outlet.blade.mid.relative.magnitude / inlet.blade.mid.relative.magnitude) + np.abs(
         inlet.blade.mid.relative.tangential - outlet.blade.mid.relative.tangential
     ) / (2 * inlet.blade.mid.relative.magnitude) * 0.4
-    logger.debug(f"Diffusion ratios:\nDR: {DR}\nDH: {DH}\nDF: {DF}")
+    logger.debug(f"Diffusion ratios:\nDiffusion Ratio: {DR}\nDe Haller: {DH}\nLieblein diffusion factor: {DF}")
 
     #  []:Vanless & Vaned Diffuser Calculations
-    compressor.vaneless_diffuser = vaneless_diffuser_calcs(
+    compressor.vaneless_diffuser, compressor.geometry.vaneless_diffuser_diameter = vaneless_diffuser_calcs(
         outlet, compressor.geometry, working_fluid, inputs.mass_flow_rate, 100, 0.001
     )
     # result = diffuser_calcs(result);
@@ -208,33 +211,3 @@ def centrifugal_calcs(
     # result.comp.C      = C;         % [] Operating line constant
     # oo = 0
     return compressor
-
-    #  [I]:Ouput
-    # result.inlet      = inlet;      % []      Inlet operating conditions
-    # result.inlet.in   = outlet.in;  % []      Inlet incidence angle
-    # result.outlet     = outlet;     % []      Outlet operating conditions
-
-    # result.comp.Nb    = Nb;         % []      Number of blades
-    # result.comp.Bc    = Bc;         % []      Final impeller compression ratio given Ds,Oms
-    # result.comp.b1    = b1;         % [m]     Inlet blade height
-    # result.comp.eta   = outlet.eta; % []      Compressor efficiency
-    # result.comp.b2    = outlet.b2;  % [m]     Outlet blade height
-    # result.comp.w     = w;          % [rad/s] Rotational speed
-    # result.comp.wRPM  = wRPM;       % [RPM]         "
-    # result.comp.Psi   = Psi;        % []      Stage loading
-    # result.comp.Phi   = Phi;        % []      Flow Coefficient
-    # result.comp.tau   = tau;        % []      Blade orientation
-    # result.comp.D1    = D1;         % []      Inlet diameters
-    # result.comp.D2    = D2;         % []      Outlet diameter
-    # result.comp.rtd2  = rtd2;       % []      Inlet tip dia. to outlet dia. ratio
-    # result.comp.rht   = rht;        % []      Inlet hub dia. to inlet tip dia. ratio
-    # result.comp.Ds    = Ds;         % []      Specific diameter
-    # result.comp.Oms   = Oms;        % []      Specific rotational speed
-    # result.comp.his   = his;        % [J]     Isentropic Work
-    # result.comp.Q1    = Q1;         % [m^3/s] Volume flow rate
-    # result.comp.sf    = sf;         % []      Diameter safety factor
-    # result.comp.l_eul = l_eul;      % [J/kg]  New work
-    # result.comp.P     = P;          % [J/s]   Power
-    # result.comp.DR    = DR;         % []      Diffusion ratio
-    # result.comp.DH    = DH;         % []      De Haller number
-    # result.comp.DF    = DF;         % []      Lieblein diffusion factor

@@ -21,7 +21,6 @@ class CompressorGeometry:
     Compressor geometry class data type:
     """
 
-    # TODO: Consider using slots to preallocate class members
     number_of_blades: int = 0
 
     inlet_hub_diameter: float = 0.0
