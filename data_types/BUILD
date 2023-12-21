@@ -49,7 +49,10 @@ py_library(
     name = "centrifugal_compressor_geometry",
     srcs = ["centrifugal_compressor_geometry.py"],
     visibility = ["//ccpd:__subpackages__"],
-    deps = ["@python_deps_numpy//:pkg"],
+    deps = [
+        "@python_deps_attrs//:pkg",
+        "@python_deps_numpy//:pkg",
+    ],
 )
 
 py_library(
