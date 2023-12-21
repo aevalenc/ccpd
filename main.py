@@ -88,13 +88,12 @@ def main(design_stage: str, caller: str = "cli"):
     if design_stage == "Preliminary":
         # [A]:Set Calculation Parameters
         if caller == "cli":
-            design_parameters, inputs = load_base_inputs()
+            design_inputs, inputsII = load_base_inputs()
         else:
             # TODO: Load parameters from neptune gui
-            design_parameters, inputs = load_base_inputs()
-
-        design_inputs, inputsII = load_inputs()
-        logger.debug(f"Inputs from neptune: {inputsII}")
+            design_inputs, inputsII = load_inputs()
+            logger.debug(f"Inputs from neptune: {inputsII}")
+            # design_parameters, inputs = load_base_inputs()
 
         # [B] Set Loop Parameters
         max_iterations = 2
