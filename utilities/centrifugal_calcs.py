@@ -23,11 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 def centrifugal_calcs(
-    specific_diameter,
-    specific_speed,
-    end_to_end_efficiency,
-    fluid,
-    material,
+    specific_diameter: float,
+    specific_speed: float,
+    end_to_end_efficiency: float,
+    fluid: str,
+    material: str,
     inputs: InputsII,
 ) -> CentrifugalCompressor:
     """

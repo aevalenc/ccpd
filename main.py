@@ -5,7 +5,7 @@
  Update: 25 November, 2023
 """
 
-from ccpd.data_types.inputs import DesignInputs, DesignParameters, Inputs, InputsII
+from ccpd.data_types.inputs import DesignInputs, DesignParametersII, Inputs, InputsII
 from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
 from ccpd.utilities.centrifugal_calcs import centrifugal_calcs
 import json
@@ -17,7 +17,7 @@ logging.basicConfig(filename="log.log", encoding="utf-8", level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def load_inputs():
+def load_inputs() -> tuple[DesignInputs, InputsII]:
     try:
         input_file = open("ccpd/neptune_inputs.json", "r")
     except IOError as io_error:
@@ -38,20 +38,21 @@ def load_inputs():
     return design_inputs, inputsII
 
 
-def load_base_inputs() -> tuple[DesignParameters, Inputs]:
+def load_base_inputs() -> tuple[DesignParametersII, InputsII]:
     try:
         design_parameter_file = open("ccpd/design_parameters.json", "r")
     except IOError as io_error:
         print(f"Error:{io_error} Design parameters import failed!")
         sys.exit()
-    design_parameters = DesignParameters(json.load(design_parameter_file))
+    loaded_file = json.load(design_parameter_file)
+    design_parameters = DesignParametersII(**loaded_file)
 
     try:
         input_file = open("ccpd/inputs.json", "r")
     except IOError as io_error:
         print(f"Error:{io_error} input parameters import failed!")
         sys.exit()
-    inputs = Inputs(json.load(input_file))
+    inputs = InputsII(**(json.load(input_file)))
     return design_parameters, inputs
 
 
@@ -90,10 +91,8 @@ def main(design_stage: str, caller: str = "cli"):
         if caller == "cli":
             design_inputs, inputsII = load_base_inputs()
         else:
-            # TODO: Load parameters from neptune gui
             design_inputs, inputsII = load_inputs()
             logger.debug(f"Inputs from neptune: {inputsII}")
-            # design_parameters, inputs = load_base_inputs()
 
         # [B] Set Loop Parameters
         max_iterations = 2

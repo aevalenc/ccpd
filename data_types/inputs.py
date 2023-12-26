@@ -67,22 +67,22 @@ class DesignParametersII:
     specific_diameter: float
     specific_rotational_speed: float
     end_to_end_efficiency: float
-    fluid: float
-    material: float
+    fluid: str
+    material: str
 
 
 @frozen
 class DesignInputs:
-    mass_flow_rate = field(converter=float)  # type: ignore
-    inlet_total_pressure = field(converter=float)  # type: ignore
-    inlet_total_temperature = field(converter=float)  # type: ignore
-    compression_ratio = field(converter=float)  # type: ignore
-    surface_roughness = field(converter=float)  # type: ignore
-    tip_clearance = field(converter=float)  # type: ignore
-    hub_diameter = field(converter=float)  # type: ignore
-    outlet_angle_guess = field(converter=float)  # type: ignore
-    specific_diameter = field(converter=float)  # type: ignore
-    specific_rotational_speed = field(converter=float)  # type: ignore
-    end_to_end_efficiency = field(converter=float)  # type: ignore
-    fluid = field(type=str)  # type: ignore
-    material = field(type=str)  # type: ignore
+    mass_flow_rate: float = field(converter=float)
+    inlet_total_pressure: float = field(converter=float)
+    inlet_total_temperature: float = field(converter=float)
+    compression_ratio: float = field(converter=float)
+    surface_roughness: float = field(converter=float)
+    tip_clearance: float = field(converter=float)
+    hub_diameter: float = field(converter=float)
+    outlet_angle_guess: float = field(converter=float)
+    specific_diameter: float = field(converter=float)
+    specific_rotational_speed: float = field(converter=float)
+    end_to_end_efficiency: float = field(converter=float)
+    fluid: str = field(type=str)
+    material: str = field(type=str)
