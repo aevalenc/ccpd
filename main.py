@@ -2,7 +2,7 @@
  Author: Alejandro Valencia
  
  Main Function
- Update: 25 November, 2023
+ Update: 3 January, 2024
 """
 
 from ccpd.data_types.inputs import DesignInputs, DesignParametersII, Inputs, InputsII
@@ -34,6 +34,7 @@ def load_inputs() -> tuple[DesignInputs, InputsII]:
         surface_roughness=design_inputs.surface_roughness,
         tip_clearance=design_inputs.tip_clearance,
         hub_diameter=design_inputs.hub_diameter,
+        outlet_angle_guess=design_inputs.outlet_angle_guess,
     )
     return design_inputs, inputsII
 

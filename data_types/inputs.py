@@ -55,6 +55,7 @@ class InputsII:
     surface_roughness: float
     tip_clearance: float
     hub_diameter: float
+    outlet_angle_guess: float
 
 
 @frozen
@@ -63,7 +64,6 @@ class DesignParametersII:
     Design Parameters version II
     """
 
-    hub_diameter: float
     specific_diameter: float
     specific_rotational_speed: float
     end_to_end_efficiency: float
@@ -84,5 +84,5 @@ class DesignInputs:
     specific_diameter: float = field(converter=float)
     specific_rotational_speed: float = field(converter=float)
     end_to_end_efficiency: float = field(converter=float)
-    fluid: str = field(type=str)
-    material: str = field(type=str)
+    fluid: str
+    material: str
