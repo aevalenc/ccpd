@@ -2,10 +2,10 @@
  Author: Alejandro Valencia
  
  Main Function
- Update: 24 July, 2020
+ Update: 3 January, 2024
 """
 
-from ccpd.data_types.inputs import DesignParameters, Inputs
+from ccpd.data_types.inputs import DesignInputs, DesignParametersII, Inputs, InputsII
 from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
 from ccpd.utilities.centrifugal_calcs import centrifugal_calcs
 import json
@@ -17,20 +17,43 @@ logging.basicConfig(filename="log.log", encoding="utf-8", level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-def load_base_inputs() -> tuple[DesignParameters, Inputs]:
+def load_inputs() -> tuple[DesignInputs, InputsII]:
+    try:
+        input_file = open("ccpd/neptune_inputs.json", "r")
+    except IOError as io_error:
+        print(f"Error:{io_error} input parameters import failed!")
+        sys.exit()
+    loaded_file = json.load(input_file)
+    design_inputs = DesignInputs(**(loaded_file))
+    logger.info(f"Inputs from neptune created")
+    inputsII = InputsII(
+        mass_flow_rate=design_inputs.mass_flow_rate,
+        inlet_total_temperature=design_inputs.inlet_total_temperature,
+        inlet_total_pressure=design_inputs.inlet_total_pressure,
+        compression_ratio=design_inputs.compression_ratio,
+        surface_roughness=design_inputs.surface_roughness,
+        tip_clearance=design_inputs.tip_clearance,
+        hub_diameter=design_inputs.hub_diameter,
+        outlet_angle_guess=design_inputs.outlet_angle_guess,
+    )
+    return design_inputs, inputsII
+
+
+def load_base_inputs() -> tuple[DesignParametersII, InputsII]:
     try:
         design_parameter_file = open("ccpd/design_parameters.json", "r")
     except IOError as io_error:
         print(f"Error:{io_error} Design parameters import failed!")
         sys.exit()
-    design_parameters = DesignParameters(json.load(design_parameter_file))
+    loaded_file = json.load(design_parameter_file)
+    design_parameters = DesignParametersII(**loaded_file)
 
     try:
         input_file = open("ccpd/inputs.json", "r")
     except IOError as io_error:
         print(f"Error:{io_error} input parameters import failed!")
         sys.exit()
-    inputs = Inputs(json.load(input_file))
+    inputs = InputsII(**(json.load(input_file)))
     return design_parameters, inputs
 
 
@@ -67,41 +90,44 @@ def main(design_stage: str, caller: str = "cli"):
     if design_stage == "Preliminary":
         # [A]:Set Calculation Parameters
         if caller == "cli":
-            design_parameters, inputs = load_base_inputs()
+            design_inputs, inputsII = load_base_inputs()
         else:
-            # TODO: Load parameters from neptune gui
-            design_parameters, inputs = load_base_inputs()
+            design_inputs, inputsII = load_inputs()
+            logger.debug(f"Inputs from neptune: {inputsII}")
 
         # [B] Set Loop Parameters
-        itrmx = 2
-        tol = 1e-5
+        max_iterations = 2
+        tolerance = 1e-5
 
         # [C]:Run Analysis
         design = CentrifugalCompressor()
-        for itr in range(1, itrmx):
-            logger.info(f"Main Iteration: {itr}")
+        end_to_end_efficiency = design_inputs.end_to_end_efficiency
+        for iteration in range(0, max_iterations):
+            iteration += 1
+            logger.info(f"Main Iteration: {iteration}")
 
             # [D]:Run Centrifugal Preliminary Design Calculations
             design = centrifugal_calcs(
-                design_parameters.specific_diameter,
-                design_parameters.specific_rotational_speed,
-                design_parameters.end_to_end_efficiency,
-                design_parameters.fluid,
-                design_parameters.material,
-                inputs,
+                design_inputs.specific_diameter,
+                design_inputs.specific_rotational_speed,
+                end_to_end_efficiency,
+                design_inputs.fluid,
+                design_inputs.material,
+                inputsII,
             )
 
             # [E]:Calculate Residual & Check Convergence
-            # RES = abs(eta_tt - design.diff.eta_tt) / eta_tt
-            # print("Main Residual: {}\n\n".format(RES))
-            # if RES < tol:
-            #     print("\nMain converged in {} iterations\n".format(itr))
-            #     break
-            # elif itr == itrmx:
-            #     print("\nMax iterations reached\n")
+            residual = abs(end_to_end_efficiency - design.total_efficiency) / design.total_efficiency
+            logger.info(f"Main Residual: {residual:.6}")
+            if residual < tolerance:
+                logger.info(f"Main converged in {iteration} iterations")
+                break
+            elif iteration == max_iterations:
+                logger.warning("Max iterations reached")
 
-            # # [F]:Reset Efficiency & Iterate
-            # eta_tt = design.diff.eta_tt
+            # [F]:Reset Efficiency & Iterate
+            end_to_end_efficiency = design.total_efficiency
+
         print(f"{Fore.GREEN}[ccpd]: exited successfully{Fore.RESET}")
 
         return design
