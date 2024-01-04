@@ -3,7 +3,7 @@ load("@rules_python//python:defs.bzl", "py_test")
 py_test(
     name = "tip_diameter_tests",
     srcs = ["tip_diameter_tests.py"],
-    deps = ["//ccpd/utilities/inlet:tip_diameter"],
+    deps = ["//ccpd/stages/inlet:tip_diameter"],
 )
 
 py_test(
@@ -12,7 +12,7 @@ py_test(
     deps = [
         "//ccpd/data_types:centrifugal_compressor_geometry",
         "//ccpd/data_types:thermo_point",
-        "//ccpd/utilities/inlet:inlet_loop_calcs",
+        "//ccpd/stages/inlet:inlet_loop_calcs",
     ],
 )
 
@@ -23,6 +23,6 @@ py_test(
         "//ccpd/data_types:centrifugal_compressor",
         "//ccpd/data_types:centrifugal_compressor_geometry",
         "//ccpd/data_types:thermo_point",
-        "//ccpd/utilities/inlet:inlet_utils",
+        "//ccpd/stages/inlet:inlet_utils",
     ],
 )

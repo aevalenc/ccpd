@@ -14,7 +14,7 @@ from ccpd.data_types.three_dimensional_blade import (
 from ccpd.data_types.thermo_point import ThermodynamicVariable, ThermoPoint
 from ccpd.data_types.inputs import Inputs
 from ccpd.data_types.working_fluid import WorkingFluid
-from ccpd.utilities.inlet.tip_diameter import ComputeTipDiameter
+from ccpd.stages.inlet.tip_diameter import ComputeTipDiameter
 from numpy import pi, sqrt, float64
 from colorama import Fore
 import logging

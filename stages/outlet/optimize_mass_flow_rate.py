@@ -9,7 +9,7 @@ from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.data_types.inputs import Inputs
 from ccpd.data_types.centrifugal_compressor import CompressorStage, CompressorGeometry
 from ccpd.data_types.centrifugal_compressor_geometry import DiameterStruct
-from ccpd.utilities.outlet.friction_coefficient import CalculateFrictionCoefficient
+from ccpd.stages.outlet.friction_coefficient import CalculateFrictionCoefficient
 import numpy as np
 from colorama import Fore
 import logging

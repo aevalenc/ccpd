@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import unittest
 from ccpd.data_types.thermo_point import ThermodynamicVariable
 from ccpd.data_types.centrifugal_compressor_geometry import CompressorGeometry
-from ccpd.utilities.inlet.inlet_loop_calcs import InletLoop
+from ccpd.stages.inlet.inlet_loop_calcs import InletLoop
 from ccpd.data_types.test_utils import MockInputs, MockWorkingFluid
 
 

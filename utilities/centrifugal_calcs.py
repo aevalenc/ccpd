@@ -9,11 +9,11 @@ from ccpd.data_types.centrifugal_compressor import CentrifugalCompressor
 from ccpd.data_types.thermo_point import ThermodynamicVariable
 from ccpd.data_types.working_fluid import WorkingFluid
 from ccpd.data_types.inputs import InputsII
-from ccpd.utilities.inlet.inlet_loop_calcs import InletLoop
-from ccpd.utilities.inlet.inlet_utils import CalculateRemainingInletQuantities
-from ccpd.utilities.outlet.setup_outlet_stage import SetupOutletStage
-from ccpd.utilities.outlet.optimize_mass_flow_rate import optimize_mass_flow
-from ccpd.utilities.vaneless_diffuser.vaneless_diffuser import vaneless_diffuser_calcs
+from ccpd.stages.inlet.inlet_loop_calcs import InletLoop
+from ccpd.stages.inlet.inlet_utils import CalculateRemainingInletQuantities
+from ccpd.stages.outlet.setup_outlet_stage import SetupOutletStage
+from ccpd.stages.outlet.optimize_mass_flow_rate import optimize_mass_flow
+from ccpd.stages.vaneless_diffuser.vaneless_diffuser import vaneless_diffuser_calcs
 import json
 import sys
 import numpy as np
