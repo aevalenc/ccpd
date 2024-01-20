@@ -14,6 +14,7 @@ from ccpd.stages.inlet.inlet_utils import CalculateRemainingInletQuantities
 from ccpd.stages.outlet.setup_outlet_stage import SetupOutletStage
 from ccpd.stages.outlet.optimize_mass_flow_rate import optimize_mass_flow
 from ccpd.stages.vaneless_diffuser.vaneless_diffuser import vaneless_diffuser_calcs
+from ccpd.stages.diffuser.diffuser_calculations import diffuser_calcs
 import json
 import sys
 import numpy as np
@@ -197,7 +198,16 @@ def centrifugal_calcs(
     compressor.vaneless_diffuser, compressor.geometry.vaneless_diffuser_diameter = vaneless_diffuser_calcs(
         outlet, compressor.geometry, working_fluid, inputs.mass_flow_rate, 100, 0.001
     )
-    # result = diffuser_calcs(result);
+
+    compressor.diffuser, compressor.total_efficiency, _ = diffuser_calcs(
+        outlet_temperature_struct=outlet.thermodynamic_point.temperature,
+        outlet_pressure_struct=outlet.thermodynamic_point.pressure,
+        working_fluid=working_fluid,
+        inlet_total_temperature=inputs.inlet_total_temperature,
+        inlet_total_pressure=inputs.inlet_total_pressure,
+        inverse_exponent=inverse_isentropic_exponent,
+        eulerian_work=eulerian_work,
+    )
     # result = diff_diameter(result);
     # result.comp.eta_tt = result.diff.eta_tt;
 

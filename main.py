@@ -2,7 +2,7 @@
  Author: Alejandro Valencia
  
  Main Function
- Update: 3 January, 2024
+ Update: 20 January, 2024
 """
 
 from ccpd.data_types.inputs import DesignInputs, DesignParametersII, Inputs, InputsII
@@ -96,7 +96,7 @@ def main(design_stage: str, caller: str = "cli"):
             logger.debug(f"Inputs from neptune: {inputsII}")
 
         # [B] Set Loop Parameters
-        max_iterations = 2
+        max_iterations = 12
         tolerance = 1e-5
 
         # [C]:Run Analysis
@@ -118,7 +118,7 @@ def main(design_stage: str, caller: str = "cli"):
 
             # [E]:Calculate Residual & Check Convergence
             residual = abs(end_to_end_efficiency - design.total_efficiency) / design.total_efficiency
-            logger.info(f"Main Residual: {residual:.6}")
+            logger.info(f"Main Residual: {residual:.6}\n")
             if residual < tolerance:
                 logger.info(f"Main converged in {iteration} iterations")
                 break
