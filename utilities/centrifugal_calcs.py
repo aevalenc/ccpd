@@ -205,7 +205,7 @@ def centrifugal_calcs(
         working_fluid=working_fluid,
         inlet_total_temperature=inputs.inlet_total_temperature,
         inlet_total_pressure=inputs.inlet_total_pressure,
-        inverse_exponent=inverse_isentropic_exponent,
+        isentropic_exponent=isentropic_exponent,
         eulerian_work=eulerian_work,
     )
     # result = diff_diameter(result);

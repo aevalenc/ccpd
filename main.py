@@ -13,7 +13,7 @@ import sys
 from colorama import Fore
 import logging
 
-logging.basicConfig(filename="log.log", encoding="utf-8", level=logging.DEBUG)
+logging.basicConfig(filename="log.log", encoding="utf-8", level=logging.INFO, filemode="w")
 logger = logging.getLogger(__name__)
 
 
@@ -96,7 +96,7 @@ def main(design_stage: str, caller: str = "cli"):
             logger.debug(f"Inputs from neptune: {inputsII}")
 
         # [B] Set Loop Parameters
-        max_iterations = 12
+        max_iterations = 2
         tolerance = 1e-5
 
         # [C]:Run Analysis

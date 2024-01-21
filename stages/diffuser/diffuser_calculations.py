@@ -25,7 +25,7 @@ def diffuser_calcs(
     working_fluid: WorkingFluid,
     inlet_total_temperature: float,
     inlet_total_pressure: float,
-    inverse_exponent: float,
+    isentropic_exponent: float,
     eulerian_work: float,
 ) -> tuple[CompressorStage, float, float]:
     """
@@ -75,7 +75,7 @@ def diffuser_calcs(
 
     T4.total = TT3  # [K]  Total temperature
     P4.static = prc * (PT3 - P3) + P3  # [Pa] Static pressure
-    T4is = T3 * (P4.static / P3) ** inverse_exponent  # [K]  Isentropic static temperature
+    T4is = T3 * (P4.static / P3) ** isentropic_exponent  # [K]  Isentropic static temperature
     T4.static = T3 + (T4is - T3) / diffuser_efficiency  # [K]  Real static temperature
     rho4.static = P4.static / (working_fluid.specific_gas_constant * T4.static)  # [kg/m^3] Density
 
@@ -109,7 +109,7 @@ def diffuser_calcs(
     # Calculate total isentropic enthalpy change [J/kg], then divide by the
     #   Eulerian work of our compressor
     Be = P4.total / inlet_total_pressure
-    htis = working_fluid.specific_heat * inlet_total_temperature * (Be**inverse_exponent - 1)
+    htis = working_fluid.specific_heat * inlet_total_temperature * (Be**isentropic_exponent - 1)
     eta_tt = htis / eulerian_work
 
     logger.debug(f"Isentropic enthalpy drop: {htis:0.6}")
