@@ -1,3 +1,5 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
 py_library(
     name = "centrifugal_calcs",
     srcs = ["centrifugal_calcs.py"],
@@ -7,10 +9,11 @@ py_library(
         "//ccpd/data_types:centrifugal_compressor",
         "//ccpd/data_types:inputs",
         "//ccpd/data_types:working_fluid",
-        "//ccpd/utilities/inlet:inlet_loop_calcs",
-        "//ccpd/utilities/inlet:inlet_utils",
-        "//ccpd/utilities/outlet:optimize_mass_flow_rate",
-        "//ccpd/utilities/outlet:setup_outlet_stage",
-        "//ccpd/utilities/vaneless_diffuser",
+        "//ccpd/stages/diffuser",
+        "//ccpd/stages/inlet:inlet_loop_calcs",
+        "//ccpd/stages/inlet:inlet_utils",
+        "//ccpd/stages/outlet:optimize_mass_flow_rate",
+        "//ccpd/stages/outlet:setup_outlet_stage",
+        "//ccpd/stages/vaneless_diffuser",
     ],
 )

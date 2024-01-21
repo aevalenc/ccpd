@@ -8,7 +8,7 @@ import unittest
 from ccpd.data_types.centrifugal_compressor import CompressorStage
 from ccpd.data_types.centrifugal_compressor_geometry import CompressorGeometry
 from ccpd.data_types.working_fluid import WorkingFluid
-from ccpd.utilities.inlet.inlet_utils import CalculateRemainingInletQuantities
+from ccpd.stages.inlet.inlet_utils import CalculateRemainingInletQuantities
 
 
 @dataclass
@@ -47,7 +47,6 @@ def CreateBasicCompressorGeometry() -> CompressorGeometry:
 
 
 class TestInletUtils(unittest.TestCase):
-
     tolerance = 0.001
 
     def test_GivenValidInputs_ExpectValidResults(self):
