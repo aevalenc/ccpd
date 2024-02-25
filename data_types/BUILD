@@ -1,4 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:packaging.bzl", "py_package")
 
 py_library(
     name = "thermo_point",
@@ -64,4 +65,12 @@ py_library(
         ":inputs",
         ":working_fluid",
     ],
+)
+
+py_package(
+    # A unique name for this target.
+    name = "ccpd_data_types",
+    packages = ["ccpd.data_types"],
+    visibility = ["//ccpd:__pkg__"],
+    deps = [":thermo_point"],
 )
